@@ -288,7 +288,7 @@ class AdremaController extends Controller
     }
 
     /**
-     * @Post("/{adrema}/send-results", as="adrema.invite")
+     * @Post("/{adrema}/send-results", as="adrema.results")
      * @Middleware("can:update,adrema")
      */
     public function sendResults(Ballot $service, Request $request, Adrema $adrema)

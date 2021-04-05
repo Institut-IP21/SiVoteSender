@@ -184,7 +184,7 @@ class VerificationController extends Controller
     }
 
     /**
-     * @Get("/single/{voter}/start", as="verification.start")
+     * @Get("/single/{voter}/start", as="verification.single.start")
      * @Middleware("can:update,voter")
      */
     public function startSingle(Request $request, ServicesVerification $service, Voter $voter)
