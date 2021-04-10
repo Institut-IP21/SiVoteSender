@@ -185,6 +185,12 @@ return [
             ],
         ],
 
+        'stage' => [
+            'supervisor-1' => [
+                'maxProcesses' => 1,
+            ],
+        ],
+
         'local' => [
             'supervisor-1' => [
                 'maxProcesses' => 1,
