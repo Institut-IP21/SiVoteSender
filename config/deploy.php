@@ -48,13 +48,13 @@ return [
         'start' => [
             //
         ],
-        
+
         // Code and composer vendors are ready but nothing is built.
         'build' => [
             // 'yarn:install',
             // 'yarn:production',
         ],
-        
+
         // Deployment is done but not live yet (before symlink)
         'ready' => [
             'artisan:storage:link',
@@ -64,22 +64,22 @@ return [
             'artisan:migrate',
             'artisan:horizon:terminate',
         ],
-        
+
         // Deployment is done and live
         'done' => [
             //
         ],
-        
+
         // Deployment succeeded.
         'success' => [
             //
         ],
-        
+
         // Deployment failed.
         'fail' => [
             //
         ],
-        
+
         // After a deployment has been rolled back.
         'rollback' => [
             //
@@ -119,7 +119,7 @@ return [
             'deploy_path' => '/var/www/sender.stage.eglasovanje.si',
             "stage" => "staging",
             'http_user' => "http",
-            'shared_files' => ['.env'],
+            'shared_files' => ['.env', 'etc/nginx.conf'],
             'shared_dirs' => ["storage"],
             'user' => 'deploy',
         ],
