@@ -121,6 +121,15 @@ return [
             'shared_dirs' => ["storage"],
             'user' => 'deploy',
         ],
+        'production' => [
+            "hostname" => "vps2",
+            'deploy_path' => '/var/www/sender.eglasovanje.si',
+            "stage" => "production",
+            'http_user' => "http",
+            'shared_files' => ['.env', 'etc/nginx.conf'],
+            'shared_dirs' => ["storage"],
+            'user' => 'deploy',
+        ],
     ],
 
     /*
