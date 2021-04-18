@@ -113,8 +113,8 @@ return [
 
     'hosts' => [
         'staging' => [
-            "hostname" => "vps2",
-            'deploy_path' => '/var/www/sender.stage.eglasovanje.si',
+            "hostname" => env('DEPLOY_HOSTNAME_STAGING', ''),
+            "deploy_path" => env('DEPLOY_DIRECTORY_STAGING', ''),
             "stage" => "staging",
             'http_user' => "http",
             'shared_files' => ['.env', 'etc/nginx.conf'],
@@ -122,8 +122,8 @@ return [
             'user' => 'deploy',
         ],
         'production' => [
-            "hostname" => "vps2",
-            'deploy_path' => '/var/www/sender.eglasovanje.si',
+            "hostname" => env('DEPLOY_HOSTNAME_PRODUCTION', ''),
+            "deploy_path" => env('DEPLOY_DIRECTORY_PRODUCTION', ''),
             "stage" => "production",
             'http_user' => "http",
             'shared_files' => ['.env', 'etc/nginx.conf'],
