@@ -20,7 +20,7 @@ return [
     ],
 
     'api' => [
-        'authlist' => explode(',', env('API_TOKEN_LIST'))
+        'authlist' => explode(',', env('API_TOKEN_LIST')),
     ],
 
     /*

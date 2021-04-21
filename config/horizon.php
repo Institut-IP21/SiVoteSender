@@ -197,4 +197,9 @@ return [
             ],
         ],
     ],
+
+    'slack' => [
+        'webhook' => env('HORIZON_SLACK_WEBHOOK', ''),
+        'channel' => env('HORIZON_SLACK_CHANNEL', '')
+    ]
 ];
