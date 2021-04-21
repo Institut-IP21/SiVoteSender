@@ -3,11 +3,11 @@
 
 return [
     'verification' => [
-        'subject' => 'E-voting: please verify your contact information!',
-        'btnConfirm' => 'Potrdite email naslov'
+        'subject' => 'eGlasovanje: prosim potrdite vaše kontaktne informacije!',
+        'btnConfirm' => 'Potrdi email'
     ],
     'invite' => [
-        'subject' => 'E-voting: your ballot',
-        'btnConfirm' => 'Odprite glasovnica'
+        'subject' => 'eGlasovanje: vaša glasovnica',
+        'btnConfirm' => 'Odpri glasovnico'
     ]
 ];

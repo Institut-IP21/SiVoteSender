@@ -1,8 +1,10 @@
 <?php
 
 return [
+
     'success' => [
-        'title' => 'Email naslov uspešno verificiran',
-        'text' => 'Hvala za sodelovanje'
+        'title' => 'Potrditev kontakta uspešna',
+        'text' => 'Vaša zmožnost, da prejemate email sporočila, ki bodo vsebovala povezavo do glasovnice je bila uspešno potrjena.',
     ]
+
 ];
