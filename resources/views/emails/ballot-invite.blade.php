@@ -1,9 +1,9 @@
-@component('mail::message')
+@component('mail::message', ['personalization' => $personalization])
 
-    {{ $template }}
+{{ $template }}
 
-    @component('mail::button', ['url' => $url])
-        {{ __('emails.invite.btnConfirm') }}
-    @endcomponent
+@component('mail::button', ['url' => $url])
+{{ __('emails.invite.btnConfirm') }}
+@endcomponent
 
 @endcomponent

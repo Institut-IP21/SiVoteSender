@@ -1,4 +1,4 @@
-@component('mail::message')
+@component('mail::message', ['personalization' => $personalization])
 # Introduction
 
 The body of your message.

@@ -1,5 +1,5 @@
-@component('mail::message')
+@component('mail::message', ['personalization' => $personalization])
 
-    {{ $template }}
+{{ $template }}
 
 @endcomponent
