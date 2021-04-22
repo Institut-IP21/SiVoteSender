@@ -11,6 +11,8 @@ class TestMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $personalization = null;
+
     /**
      * Create a new message instance.
      *
@@ -18,7 +20,7 @@ class TestMail extends Mailable
      */
     public function __construct()
     {
-        //
+        $this->personalization = \Auth::user()->personalization;
     }
 
     /**

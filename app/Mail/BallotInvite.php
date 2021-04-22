@@ -14,6 +14,7 @@ class BallotInvite extends Mailable
     public $url;
     public $template;
     public $subject;
+    public $personalization;
 
     /**
      * Create a new message instance.
@@ -31,6 +32,7 @@ class BallotInvite extends Mailable
         $this->url      = $url;
         $this->template = $template;
         $this->subject  = $subject;
+        $this->personalization = \Auth::user()->personalization;
     }
 
     /**

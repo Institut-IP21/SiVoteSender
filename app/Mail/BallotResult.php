@@ -13,6 +13,7 @@ class BallotResult extends Mailable
     public $template;
     public $subject;
     public $csv;
+    public $personalization;
 
     /**
      * Create a new message instance.
@@ -24,6 +25,7 @@ class BallotResult extends Mailable
         $this->template = $template;
         $this->subject  = $subject;
         $this->csv  = $csv;
+        $this->personalization = \Auth::user()->personalization;
     }
 
     /**

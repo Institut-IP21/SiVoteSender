@@ -15,6 +15,7 @@ class Verification extends Mailable
     public $subject;
     public $template;
     public $url;
+    public $personalization;
 
     /**
      * Create a new message instance.
@@ -31,6 +32,7 @@ class Verification extends Mailable
             $this->template = str_replace('%%LINK%%', $url, $template);
         }
         $this->url      = $url;
+        $this->personalization = \Auth::user()->personalization;
     }
 
     /**
