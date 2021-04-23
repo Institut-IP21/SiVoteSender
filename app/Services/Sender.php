@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Mail;
 class Sender
 {
 
-    public function sendEmail(Voter $voter, Mailable $mailable, $order, string $batch = ''): SentMessage
+    public function sendEmail(Voter $voter, Mailable $mailable, $order, string $batch = ''): ?SentMessage
     {
         if ($voter->email_blocked) {
             Log::info('Sending blocked', ['to' => $voter->id, 'type' => get_class($mailable)]);
-            return false;
+            return null;
         }
 
         switch (get_class($order)) {
