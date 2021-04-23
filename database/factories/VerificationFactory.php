@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Adrema;
+use App\Models\VoterList;
 use App\Models\SentMessage;
 use App\Models\Verification;
 use App\Models\Voter;
@@ -25,7 +25,7 @@ class VerificationFactory extends Factory
     public function definition()
     {
         return [
-            //'adrema_id',
+            //'voterlist_id',
             'template'     => 'Please verify by following this link: %%LINK%%',
             'sent_at'      => null,
             'redirect_url' => $this->faker->optional()->url

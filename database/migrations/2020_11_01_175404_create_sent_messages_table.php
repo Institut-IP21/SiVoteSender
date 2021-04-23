@@ -18,7 +18,7 @@ class CreateSentMessagesTable extends Migration
             $table->id();
             $table->enum('type', ['sms', 'email']);
             $table->foreignId('voter_id');
-            $table->foreignId('adrema_id');
+            $table->foreignId('voterlist_id');
             $table->uuid('batch_uuid')->nullable();
             $table->foreignId('verification_id')->nullable();
             $table->boolean('successful')->default(false);

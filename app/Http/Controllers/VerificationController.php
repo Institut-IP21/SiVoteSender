@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\VerificationBasic;
 use App\Http\Resources\VerificationFull;
-use App\Models\Adrema;
+use App\Models\VoterList;
 use App\Models\Verification;
 use App\Models\Voter;
 use App\Services\Verification as ServicesVerification;
@@ -41,10 +41,10 @@ class VerificationController extends Controller
             'size' =>
             'integer',
             'sort_by' =>
-            'string|in:id,sent_at,adrema_id|required_with:sort_direction',
+            'string|in:id,sent_at,voterlist_id|required_with:sort_direction',
             'sort_direction' =>
             'in:desc,asc|required_with:sort_by',
-            'filter_by_adrema' =>
+            'filter_by_voterlist' =>
             'sometimes|integer',
         ];
 
@@ -55,14 +55,14 @@ class VerificationController extends Controller
         $query = Verification::with('sentMessages');
 
         $query->whereHas(
-            'adrema',
+            'voterlist',
             function (Builder $query) use ($owner) {
                 $query->where('owner', $this->getOwner());
             }
         );
 
-        if (!empty($params['filter_by_adrema'])) {
-            $query->where('adrema_id', $params['filter_by_adrema']);
+        if (!empty($params['filter_by_voterlist'])) {
+            $query->where('voterlist_id', $params['filter_by_voterlist']);
         }
 
         if (!empty($params['sort_by'])) {
@@ -101,8 +101,8 @@ class VerificationController extends Controller
 
         $params = $request->all();
         $settings = [
-            'adrema_id' =>
-            'required|integer|exists:' . Adrema::class . ',id',
+            'voterlist_id' =>
+            'required|integer|exists:' . VoterList::class . ',id',
             'redirect_url' =>
             'sometimes|nullable|url',
             'template' =>
@@ -115,12 +115,12 @@ class VerificationController extends Controller
             return $errors;
         }
 
-        $adrema = Adrema::findOrFail($params['adrema_id']);
-        abort_if($this->checkOwner($adrema->owner), 403);
+        $voterlist = VoterList::findOrFail($params['voterlist_id']);
+        abort_if($this->checkOwner($voterlist->owner), 403);
 
 
         $data = [
-            'adrema_id'    => $params['adrema_id'],
+            'voterlist_id'    => $params['voterlist_id'],
             'template'     => $params['template'],
             'subject'      => $params['subject'] ?? null,
             'redirect_url' => $params['redirect_url'] ?? null,

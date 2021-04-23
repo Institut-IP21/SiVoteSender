@@ -27,7 +27,7 @@ class SentMessageFactory extends Factory
             'status'     => "",
             // The following have to be set when creating!
             // 'voter_id'        => null,
-            // 'adrema_id'       => null,
+            // 'voterlist_id'       => null,
             // 'batch_uuid'      => null,
             // 'verification_id' => null,
         ];

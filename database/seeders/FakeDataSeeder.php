@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Adrema;
+use App\Models\VoterList;
 use App\Models\Verification;
 use App\Models\Voter;
 use Illuminate\Database\Seeder;
@@ -18,7 +18,7 @@ class FakeDataSeeder extends Seeder
      */
     public function run()
     {
-        $adrema = Adrema::factory()
+        $voterlist = VoterList::factory()
             ->times(1)
 
             // Non-verified voters

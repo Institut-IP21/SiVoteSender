@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Adrema;
+use App\Models\VoterList;
 use App\Models\GlobalEmailBlockList;
 use App\Models\SentMessage;
 use App\Models\Verification as ModelsVerification;
@@ -24,13 +24,13 @@ class Sender
 
         switch (get_class($order)) {
             case ModelsVerification::class:
-                $adrema = $order->adrema_id;
+                $voterlist = $order->voterlist_id;
                 $verification = $order->id;
                 break;
 
-            case Adrema::class:
+            case VoterList::class:
             default:
-                $adrema = $order->id;
+                $voterlist = $order->id;
                 $verification = null;
                 break;
         }
@@ -44,7 +44,7 @@ class Sender
             [
                 'type'            => SentMessage::TYPE_EMAIL,
                 'voter_id'        => $voter->id,
-                'adrema_id'       => $adrema,
+                'voterlist_id'       => $voterlist,
                 'batch_uuid'      => $batch,
                 'verification_id' => $verification,
                 'successful'      => false,

@@ -20,7 +20,7 @@ class VerificationBasic extends JsonResource
             'subject'      => $this->subject,
             'sent_at'      => $this->sent_at,
             'redirect_url' => $this->redirect_url,
-            'adrema'   => new AdremaBasic($this->adrema),
+            'voterlist'   => new VoterListBasic($this->voterlist),
             'created_at'   => $this->created_at,
             'updated_at'   => $this->updated_at,
             'stats' => [

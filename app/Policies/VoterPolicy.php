@@ -21,7 +21,7 @@ class VoterPolicy
      */
     public function view(User $user, Voter $voter)
     {
-        return $user->owner === $voter->adremas->first()->owner
+        return $user->owner === $voter->voterlists->first()->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -35,7 +35,7 @@ class VoterPolicy
      */
     public function update(User $user, Voter $voter)
     {
-        return $user->owner === $voter->adremas->first()->owner
+        return $user->owner === $voter->voterlists->first()->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -49,7 +49,7 @@ class VoterPolicy
      */
     public function delete(User $user, Voter $voter)
     {
-        return $user->owner === $voter->adremas->first()->owner
+        return $user->owner === $voter->voterlists->first()->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }

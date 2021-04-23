@@ -20,7 +20,7 @@ class VerificationPolicy
      */
     public function view(User $user, Verification $verification)
     {
-        return $user->owner === $verification->adrema->owner
+        return $user->owner === $verification->voterlist->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -34,7 +34,7 @@ class VerificationPolicy
      */
     public function update(User $user, Verification $verification)
     {
-        return $user->owner === $verification->adrema->owner
+        return $user->owner === $verification->voterlist->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -48,7 +48,7 @@ class VerificationPolicy
      */
     public function delete(User $user, Verification $verification)
     {
-        return $user->owner === $verification->adrema->owner
+        return $user->owner === $verification->voterlist->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }

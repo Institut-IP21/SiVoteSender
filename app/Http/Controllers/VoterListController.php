@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\AdremaBasic;
-use App\Http\Resources\AdremaFull;
+use App\Http\Resources\VoterListBasic;
+use App\Http\Resources\VoterListFull;
 use App\Http\Resources\VoterBasic;
-use App\Models\Adrema;
+use App\Models\VoterList;
 use App\Models\Voter;
 use App\Services\Ballot;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,24 +14,24 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
- * @Controller(prefix="api/adrema")
+ * @Controller(prefix="api/voterlist")
  * @Middleware("api")
  */
-class AdremaController extends Controller
+class VoterListController extends Controller
 {
 
     /**
-     * @Get("/{adrema}", as="adrema.show")
-     * @Middleware("can:view,adrema")
+     * @Get("/{voterlist}", as="voterlist.show")
+     * @Middleware("can:view,voterlist")
      */
-    public function show(Adrema $adrema)
+    public function show(VoterList $voterlist)
     {
-        return new AdremaFull($adrema);
+        return new VoterListFull($voterlist);
     }
 
     /**
-     * @Get("/", as="adrema.list")
-     * @Middleware("can:viewAny,App\Models\Adrema")
+     * @Get("/", as="voterlist.list")
+     * @Middleware("can:viewAny,App\Models\VoterList")
      */
     public function list(Request $request)
     {
@@ -51,7 +51,7 @@ class AdremaController extends Controller
             return $errors;
         }
 
-        $query = Adrema::with('voters', 'sentMessages');
+        $query = VoterList::with('voters', 'sentMessages');
 
         $query->where('owner', $this->getOwner());
 
@@ -62,7 +62,7 @@ class AdremaController extends Controller
             );
         }
 
-        return AdremaBasic::collection(
+        return VoterListBasic::collection(
             $query
                 ->paginate($params['size'] ?? 5)
                 ->appends($params)
@@ -70,10 +70,10 @@ class AdremaController extends Controller
     }
 
     /**
-     * @Get("/{adrema}/voters", as="adrema.voters.list")
-     * @Middleware("can:view,adrema")
+     * @Get("/{voterlist}/voters", as="voterlist.voters.list")
+     * @Middleware("can:view,voterlist")
      */
-    public function listVoters(Request $request, Adrema $adrema)
+    public function listVoters(Request $request, VoterList $voterlist)
     {
         $params = $request->all();
         $settings = [
@@ -91,7 +91,7 @@ class AdremaController extends Controller
             return $errors;
         }
 
-        $query = $adrema->voters();
+        $query = $voterlist->voters();
 
         if (!empty($params['sort_by'])) {
             $query->orderBy(
@@ -108,18 +108,18 @@ class AdremaController extends Controller
     }
 
     /**
-     * @Delete("/{adrema}", as="adrema.remove")
-     * @Middleware("can:delete,adrema")
+     * @Delete("/{voterlist}", as="voterlist.remove")
+     * @Middleware("can:delete,voterlist")
      */
-    public function delete(Adrema $adrema)
+    public function delete(VoterList $voterlist)
     {
-        $adrema->delete();
+        $voterlist->delete();
         return $this->basicResponse(200);
     }
 
     /**
-     * @Post("/", as="adrema.create")
-     * @Middleware("can:create,App\Models\Adrema")
+     * @Post("/", as="voterlist.create")
+     * @Middleware("can:create,App\Models\VoterList")
      */
     public function create(Request $request)
     {
@@ -138,16 +138,16 @@ class AdremaController extends Controller
             'owner' => $this->getOwner(),
         ];
 
-        $adrema = Adrema::create($data);
+        $voterlist = VoterList::create($data);
 
-        return new AdremaFull($adrema);
+        return new VoterListFull($voterlist);
     }
 
     /**
-     * @Post("/{adrema}", as="adrema.update")
-     * @Middleware("can:update,adrema")
+     * @Post("/{voterlist}", as="voterlist.update")
+     * @Middleware("can:update,voterlist")
      */
-    public function update(Request $request, Adrema $adrema)
+    public function update(Request $request, VoterList $voterlist)
     {
         $params = $request->all();
         $settings = [
@@ -159,17 +159,17 @@ class AdremaController extends Controller
             return $errors;
         }
 
-        $adrema->title = $params['title'];
-        $adrema->save();
+        $voterlist->title = $params['title'];
+        $voterlist->save();
 
-        return new AdremaFull($adrema);
+        return new VoterListFull($voterlist);
     }
 
     /**
-     * @Post("/{adrema}/voters", as="adrema.voters.add")
-     * @Middleware("can:update,adrema")
+     * @Post("/{voterlist}/voters", as="voterlist.voters.add")
+     * @Middleware("can:update,voterlist")
      */
-    public function addVoters(Request $request, Adrema $adrema)
+    public function addVoters(Request $request, VoterList $voterlist)
     {
         $params = $request->all();
         $settings = [
@@ -196,19 +196,19 @@ class AdremaController extends Controller
                     'phone' => $voterData->phone ?? null,
                 ]
             );
-            $adrema->voters()->attach($voter);
+            $voterlist->voters()->attach($voter);
         }
 
-        $adrema->save();
+        $voterlist->save();
 
-        return new AdremaFull($adrema);
+        return new VoterListFull($voterlist);
     }
 
     /**
-     * @Delete("/{adrema}/voters", as="adrema.voters.remove")
-     * @Middleware("can:update,adrema")
+     * @Delete("/{voterlist}/voters", as="voterlist.voters.remove")
+     * @Middleware("can:update,voterlist")
      */
-    public function removeVoters(Request $request, Adrema $adrema)
+    public function removeVoters(Request $request, VoterList $voterlist)
     {
         $params = $request->all();
         $settings = [
@@ -226,14 +226,14 @@ class AdremaController extends Controller
         }
         Voter::destroy($voters);
 
-        return new AdremaFull($adrema);
+        return new VoterListFull($voterlist);
     }
 
     /**
-     * @Post("/{adrema}/send-invites", as="adrema.invite")
-     * @Middleware("can:update,adrema")
+     * @Post("/{voterlist}/send-invites", as="voterlist.invite")
+     * @Middleware("can:update,voterlist")
      */
-    public function sendInvites(Ballot $service, Request $request, Adrema $adrema)
+    public function sendInvites(Ballot $service, Request $request, VoterList $voterlist)
     {
         $params = $request->all();
         $settings = [
@@ -265,9 +265,9 @@ class AdremaController extends Controller
             return $errors;
         }
 
-        if ($adrema->checkAdremaHasBlockedVoters()) {
+        if ($voterlist->checkVoterListHasBlockedVoters()) {
             return $this->basicResponse(409, [
-                'error' => 'Adrema contains blocked voters.'
+                'error' => 'VoterList contains blocked voters.'
             ]);
         }
 
@@ -278,7 +278,7 @@ class AdremaController extends Controller
         $subject  = $params['subject'];
 
         try {
-            $status = $service->sendInvites($adrema, $codes, $url, $batch, $template, $subject);
+            $status = $service->sendInvites($voterlist, $codes, $url, $batch, $template, $subject);
         } catch (\Exception $e) {
             Log::alert('Error while sending invites', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
@@ -288,10 +288,10 @@ class AdremaController extends Controller
     }
 
     /**
-     * @Post("/{adrema}/send-results", as="adrema.results")
-     * @Middleware("can:update,adrema")
+     * @Post("/{voterlist}/send-results", as="voterlist.results")
+     * @Middleware("can:update,voterlist")
      */
-    public function sendResults(Ballot $service, Request $request, Adrema $adrema)
+    public function sendResults(Ballot $service, Request $request, VoterList $voterlist)
     {
 
         $params = $request->all();
@@ -321,7 +321,7 @@ class AdremaController extends Controller
         $csv      = $params['csv'];
 
         try {
-            $status = $service->sendResults($adrema, $batch, $template, $subject, $csv);
+            $status = $service->sendResults($voterlist, $batch, $template, $subject, $csv);
         } catch (\Exception $e) {
             Log::alert('Error while sending results', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
@@ -331,7 +331,7 @@ class AdremaController extends Controller
     }
 
     /**
-     * @Post("send/test", as="adrema.start.test")
+     * @Post("send/test", as="voterlist.start.test")
      */
     public function startTest(Ballot $service, Request $request)
     {

@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Dyrynda\Database\Support\CascadeSoftDeletes;
 
 /**
- * Adrema
+ * VoterList
  *
- * @Bind("adrema")
+ * @Bind("voterlist")
  */
-class Adrema extends Model
+class VoterList extends Model
 {
     use HasFactory;
     use SoftDeletes;
@@ -23,7 +23,7 @@ class Adrema extends Model
      *
      * @var string
      */
-    protected $table = 'adremas';
+    protected $table = 'voterlists';
 
     protected $cascadeDeletes = ['voters', 'sentMessages', 'verifications'];
 
@@ -38,11 +38,11 @@ class Adrema extends Model
     ];
 
     /**
-     * Checks if adrema has any emails that are blocked
+     * Checks if voterlist has any emails that are blocked
      *
      * @return boolean
      */
-    public function checkAdremaHasBlockedVoters(): bool
+    public function checkVoterListHasBlockedVoters(): bool
     {
         $emails = $this->voters->pluck('email');
 
@@ -53,7 +53,7 @@ class Adrema extends Model
 
     public function voters()
     {
-        return $this->belongsToMany(Voter::class)->withTimestamps();
+        return $this->belongsToMany(Voter::class, 'voterlist_voter', 'voterlist_id')->withTimestamps();
     }
 
     public function sentMessages()

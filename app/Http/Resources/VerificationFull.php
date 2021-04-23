@@ -16,7 +16,7 @@ class VerificationFull extends JsonResource
     {
         return [
             'id'           => $this->id,
-            'adrema'       => new AdremaBasic($this->adrema),
+            'voterlist'       => new VoterListBasic($this->voterlist),
             'sentMessages' => SentMessageBasic::collection($this->sentMessages),
             'template'     => $this->template,
             'subject'      => $this->subject,

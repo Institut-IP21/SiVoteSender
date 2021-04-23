@@ -15,7 +15,7 @@ class CreateVerificationsTable extends Migration
     {
         Schema::create('verifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('adrema_id');
+            $table->foreignId('voterlist_id');
             $table->text('template');
             $table->string('subject')->nullable();
             $table->string('redirect_url')->nullable();

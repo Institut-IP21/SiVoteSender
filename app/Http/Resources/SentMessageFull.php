@@ -19,7 +19,7 @@ class SentMessageFull extends JsonResource
             'contact'         => $this->contact,
             'type'            => $this->type,
             'voter'           => VoterBasic::collection($this->voter),
-            'adrema'          => AdremaBasic::collection($this->adrema),
+            'voterlist'          => VoterListBasic::collection($this->voterlist),
             'batch_uuid'      => $this->batch_uuid,
             'successful'      => $this->successful,
             'status'          => $this->status,

@@ -55,7 +55,7 @@ class SentMessage extends Model
     protected $fillable = [
         'type',
         'voter_id',
-        'adrema_id',
+        'voterlist_id',
         'batch_uuid',
         'verification_id',
         'successful',
@@ -68,7 +68,7 @@ class SentMessage extends Model
      *
      * @var array
      */
-    protected $touches = ['voter', 'verification'];
+    protected $touches = ['voter', 'verification', 'voterlist'];
 
     //
 
@@ -90,9 +90,9 @@ class SentMessage extends Model
         return $this->belongsTo(Voter::class);
     }
 
-    public function adrema()
+    public function voterlist()
     {
-        return $this->belongsTo(Adrema::class);
+        return $this->belongsTo(VoterList::class, 'voterlist_id');
     }
 
     public function verification()

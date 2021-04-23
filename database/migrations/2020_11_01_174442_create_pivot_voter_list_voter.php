@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateAdremasTable extends Migration
+class CreatePivotVoterListVoter extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,11 @@ class CreateAdremasTable extends Migration
      */
     public function up()
     {
-        Schema::create('adremas', function (Blueprint $table) {
-            $table->id();
-            $table->string('owner', 36)->comment('Should be UUID of owner');
-            $table->string('title');
+        Schema::create('voterlist_voter', function (Blueprint $table) {
+            $table->foreignId('voterlist_id');
+            $table->foreignId('voter_id');
             $table->timestamps();
-            $table->softDeletes('deleted_at');
-
-            $table->index('owner');
+            $table->index('voterlist_id');
         });
     }
 
@@ -31,6 +28,6 @@ class CreateAdremasTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('adremas');
+        Schema::dropIfExists('voterlist_voter');
     }
 }

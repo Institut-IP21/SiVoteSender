@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\BallotInvite;
-use App\Models\Adrema;
+use App\Models\VoterList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -23,7 +23,7 @@ class ExecuteElectionTest extends TestCase
     public function testStartElection()
     {
 
-        $adrema = Adrema::factory()
+        $voterlist = VoterList::factory()
             ->has(Voter::factory()->count(4))
             ->create(
                 [
@@ -41,7 +41,7 @@ class ExecuteElectionTest extends TestCase
                 ]
             )
             ->post(
-                '/api/adrema/' . $adrema->id . '/send-invites',
+                '/api/voterlist/' . $voterlist->id . '/send-invites',
                 [
                     'batch' => '5aaa7b5d-41e8-4e40-93b4-acd506403ee4',
                     'codes' =>
@@ -65,7 +65,7 @@ class ExecuteElectionTest extends TestCase
     public function testStartElectionWithBlockedEmail()
     {
 
-        $adrema = Adrema::factory()
+        $voterlist = VoterList::factory()
             ->has(Voter::factory()->count(4))
             ->create(
                 [
@@ -73,7 +73,7 @@ class ExecuteElectionTest extends TestCase
                 ]
             );
 
-        $blockedVoter = $adrema->voters->first();
+        $blockedVoter = $voterlist->voters->first();
 
         GlobalEmailBlockList::create([
             'email' => $blockedVoter->email,
@@ -90,7 +90,7 @@ class ExecuteElectionTest extends TestCase
                 ]
             )
             ->post(
-                '/api/adrema/' . $adrema->id . '/send-invites',
+                '/api/voterlist/' . $voterlist->id . '/send-invites',
                 [
                     'batch' => '5aaa7b5d-41e8-4e40-93b4-acd506403ee4',
                     'codes' =>

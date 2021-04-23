@@ -38,7 +38,7 @@ class Verification extends Model
      * @var array
      */
     protected $fillable = [
-        'adrema_id',
+        'voterlist_id',
         'template',
         'subject',
         'redirect_url'
@@ -50,13 +50,13 @@ class Verification extends Model
      *
      * @var array
      */
-    protected $touches = ['adrema'];
+    protected $touches = ['voterlist'];
 
     //
 
-    public function adrema()
+    public function voterlist()
     {
-        return $this->belongsTo(Adrema::class);
+        return $this->belongsTo(VoterList::class);
     }
 
     public function sentMessages()

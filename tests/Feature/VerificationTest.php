@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Verification as MailVerification;
-use App\Models\Adrema;
+use App\Models\VoterList;
 use App\Models\GlobalEmailBlockList;
 use App\Models\Verification;
 use App\Models\Voter;
@@ -55,9 +55,9 @@ class VerificationTest extends TestCase
     //
     //
 
-    public function testCreateAdrema()
+    public function testCreateVoterList()
     {
-        $title = "Test Adrema";
+        $title = "Test VoterList";
 
         $response = $this
             ->withHeaders(
@@ -67,7 +67,7 @@ class VerificationTest extends TestCase
                 ]
             )
             ->post(
-                '/api/adrema',
+                '/api/voterlist',
                 [
                     'title' => $title,
                 ]
@@ -84,9 +84,9 @@ class VerificationTest extends TestCase
     }
 
     /**
-     * @depends testCreateAdrema
+     * @depends testCreateVoterList
      */
-    public function testCreateVerification($adremaId)
+    public function testCreateVerification($voterlistId)
     {
         $response = $this
             ->withHeaders(
@@ -98,7 +98,7 @@ class VerificationTest extends TestCase
             ->post(
                 '/api/verification',
                 [
-                    'adrema_id' => $adremaId,
+                    'voterlist_id' => $voterlistId,
                     'template'  => "Template",
                     'subject'   => "Subject",
                 ]
@@ -113,7 +113,7 @@ class VerificationTest extends TestCase
 
         $data = $response->json();
 
-        return [$adremaId, $data['data']['id']];
+        return [$voterlistId, $data['data']['id']];
     }
 
     /**
@@ -121,7 +121,7 @@ class VerificationTest extends TestCase
      */
     public function testUpdateVerification($data)
     {
-        list($adremaId, $verificationId) = $data;
+        list($voterlistId, $verificationId) = $data;
 
         $response = $this
             ->withHeaders(
@@ -146,7 +146,7 @@ class VerificationTest extends TestCase
         $response->assertJsonFragment(['sent_at' => null]);
         $response->assertJsonFragment(['redirect_url' => null]);
 
-        return [$adremaId, $verificationId];
+        return [$voterlistId, $verificationId];
     }
 
     /**
@@ -154,7 +154,7 @@ class VerificationTest extends TestCase
      */
     public function testTestStartVerification($data)
     {
-        list($adremaId, $verificationId) = $data;
+        list($voterlistId, $verificationId) = $data;
 
         // Resetting values
         $response = $this
@@ -216,14 +216,14 @@ class VerificationTest extends TestCase
         );
 
 
-        return [$adremaId, $verificationId];
+        return [$voterlistId, $verificationId];
     }
 
 
     public function testRealStartVerification()
     {
 
-        $adrema = Adrema::factory()
+        $voterlist = VoterList::factory()
             ->has(Voter::factory()->count(15))
             ->create(
                 [
@@ -233,7 +233,7 @@ class VerificationTest extends TestCase
 
         $verification = Verification::factory()->create(
             [
-                'adrema_id' => $adrema->id,
+                'voterlist_id' => $voterlist->id,
             ]
         );
 
@@ -274,7 +274,7 @@ class VerificationTest extends TestCase
     public function testRealStartVerificationWithBlockedVoters()
     {
 
-        $adrema = Adrema::factory()
+        $voterlist = VoterList::factory()
             ->has(Voter::factory()->count(5))
             ->create(
                 [
@@ -282,7 +282,7 @@ class VerificationTest extends TestCase
                 ]
             );
 
-        $blockedVoter = $adrema->voters->first();
+        $blockedVoter = $voterlist->voters->first();
 
         GlobalEmailBlockList::create([
             'email' => $blockedVoter->email,
@@ -291,7 +291,7 @@ class VerificationTest extends TestCase
 
         $verification = Verification::factory()->create(
             [
-                'adrema_id' => $adrema->id,
+                'voterlist_id' => $voterlist->id,
             ]
         );
 
@@ -316,7 +316,7 @@ class VerificationTest extends TestCase
     public function testRealStartForSingleVoterVerification()
     {
 
-        $adrema = Adrema::factory()
+        $voterlist = VoterList::factory()
             ->has(Voter::factory()->count(1))
             ->create(
                 [
@@ -324,7 +324,7 @@ class VerificationTest extends TestCase
                 ]
             );
 
-        $voter = $adrema->voters->first();
+        $voter = $voterlist->voters->first();
 
         Mail::fake();
 

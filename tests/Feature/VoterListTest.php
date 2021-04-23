@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Str;
 
-class AdremaTest extends TestCase
+class VoterListTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -24,7 +24,7 @@ class AdremaTest extends TestCase
                 ]
             )
             ->get(
-                '/api/adrema',
+                '/api/voterlist',
             );
 
         $response->assertUnauthorized();
@@ -39,15 +39,15 @@ class AdremaTest extends TestCase
                 ]
             )
             ->get(
-                '/api/adrema',
+                '/api/voterlist',
             );
 
         $response->assertUnauthorized();
     }
 
-    public function testCreateAdrema()
+    public function testCreateVoterList()
     {
-        $title = "Test Adrema";
+        $title = "Test VoterList";
 
         $response = $this
             ->withHeaders(
@@ -57,7 +57,7 @@ class AdremaTest extends TestCase
                 ]
             )
             ->post(
-                '/api/adrema',
+                '/api/voterlist',
                 [
                     'title' => $title,
                 ]
@@ -74,7 +74,7 @@ class AdremaTest extends TestCase
     }
 
     /**
-     * @depends testCreateAdrema
+     * @depends testCreateVoterList
      */
     public function testWrongOwner($id)
     {
@@ -86,18 +86,18 @@ class AdremaTest extends TestCase
                 ]
             )
             ->get(
-                '/api/adrema/' . $id,
+                '/api/voterlist/' . $id,
             );
 
         $response->assertStatus(403);
     }
 
     /**
-     * @depends testCreateAdrema
+     * @depends testCreateVoterList
      */
-    public function testGetAdrema($id)
+    public function testGetVoterList($id)
     {
-        $title = "Test Adrema";
+        $title = "Test VoterList";
 
         $response = $this
             ->withHeaders(
@@ -107,7 +107,7 @@ class AdremaTest extends TestCase
                 ]
             )
             ->get(
-                '/api/adrema/' . $id,
+                '/api/voterlist/' . $id,
             );
 
         $response->assertSuccessful();
@@ -119,11 +119,11 @@ class AdremaTest extends TestCase
     }
 
     /**
-     * @depends testGetAdrema
+     * @depends testGetVoterList
      */
-    public function testUpdateAdrema($id)
+    public function testUpdateVoterList($id)
     {
-        $title = "Test Adrema NEW";
+        $title = "Test VoterList NEW";
 
         $response = $this
             ->withHeaders(
@@ -133,7 +133,7 @@ class AdremaTest extends TestCase
                 ]
             )
             ->post(
-                '/api/adrema/' . $id,
+                '/api/voterlist/' . $id,
                 [
                     'title' => $title
                 ]
@@ -148,7 +148,7 @@ class AdremaTest extends TestCase
     }
 
     /**
-     * @depends testUpdateAdrema
+     * @depends testUpdateVoterList
      */
     public function testAddVoters($id)
     {
@@ -160,7 +160,7 @@ class AdremaTest extends TestCase
                 ]
             )
             ->post(
-                '/api/adrema/' . $id . '/voters',
+                '/api/voterlist/' . $id . '/voters',
                 [
                     'voters' => json_encode([
                         [
@@ -192,10 +192,10 @@ class AdremaTest extends TestCase
     /**
      * @depends testAddVoters
      */
-    public function testGetListOfVotersForAdrema($data)
+    public function testGetListOfVotersForVoterList($data)
     {
         $voterId = $data[1];
-        $adremaId = $data[0];
+        $voterlistId = $data[0];
 
         $response = $this
             ->withHeaders(
@@ -205,7 +205,7 @@ class AdremaTest extends TestCase
                 ]
             )
             ->get(
-                '/api/adrema/' . $adremaId . '/voters?sort_by=id&sort_direction=desc'
+                '/api/voterlist/' . $voterlistId . '/voters?sort_by=id&sort_direction=desc'
             );
 
         $response->assertSuccessful();
@@ -217,12 +217,12 @@ class AdremaTest extends TestCase
     }
 
     /**
-     * @depends testGetListOfVotersForAdrema
+     * @depends testGetListOfVotersForVoterList
      */
     public function testRemoveVoters($data)
     {
         $voterId = $data[1];
-        $adremaId = $data[0];
+        $voterlistId = $data[0];
 
         $response = $this
             ->withHeaders(
@@ -232,7 +232,7 @@ class AdremaTest extends TestCase
                 ]
             )
             ->delete(
-                '/api/adrema/' . $adremaId . '/voters',
+                '/api/voterlist/' . $voterlistId . '/voters',
                 [
                     'voters' => json_encode(
                         [
@@ -253,11 +253,11 @@ class AdremaTest extends TestCase
     }
 
     /**
-     * @depends testUpdateAdrema
+     * @depends testUpdateVoterList
      */
-    public function testGetListOfAdremas($id)
+    public function testGetListOfVoterLists($id)
     {
-        $title = "Test Adrema NEW";
+        $title = "Test VoterList NEW";
 
         $response = $this
             ->withHeaders(
@@ -267,7 +267,7 @@ class AdremaTest extends TestCase
                 ]
             )
             ->get(
-                '/api/adrema?sort_by=id&sort_direction=desc',
+                '/api/voterlist?sort_by=id&sort_direction=desc',
             );
 
         $response->assertSuccessful();
@@ -281,7 +281,7 @@ class AdremaTest extends TestCase
     /**
      * @depends testAddVoters
      */
-    public function testRemoveAdrema()
+    public function testRemoveVoterList()
     {
         $response = $this
             ->withHeaders(
@@ -291,7 +291,7 @@ class AdremaTest extends TestCase
                 ]
             )
             ->post(
-                '/api/adrema',
+                '/api/voterlist',
                 [
                     'title' => 'TBD',
                 ]
@@ -308,7 +308,7 @@ class AdremaTest extends TestCase
                 ]
             )
             ->delete(
-                '/api/adrema/' . $id,
+                '/api/voterlist/' . $id,
             );
 
         $response->assertSuccessful();

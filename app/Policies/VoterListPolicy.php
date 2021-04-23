@@ -2,12 +2,12 @@
 
 namespace App\Policies;
 
-use App\Models\Adrema;
+use App\Models\VoterList;
 use App\Models\ApiUser as User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 
-class AdremaPolicy
+class VoterListPolicy
 {
     use HandlesAuthorization;
 
@@ -26,12 +26,12 @@ class AdremaPolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Adrema  $adrema
+     * @param  \App\Models\VoterList  $voterlist
      * @return mixed
      */
-    public function view(User $user, Adrema $adrema)
+    public function view(User $user, VoterList $voterlist)
     {
-        return $user->owner === $adrema->owner
+        return $user->owner === $voterlist->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -51,12 +51,12 @@ class AdremaPolicy
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Adrema  $adrema
+     * @param  \App\Models\VoterList  $voterlist
      * @return mixed
      */
-    public function update(User $user, Adrema $adrema)
+    public function update(User $user, VoterList $voterlist)
     {
-        return $user->owner === $adrema->owner
+        return $user->owner === $voterlist->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -65,12 +65,12 @@ class AdremaPolicy
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Adrema  $adrema
+     * @param  \App\Models\VoterList  $voterlist
      * @return mixed
      */
-    public function delete(User $user, Adrema $adrema)
+    public function delete(User $user, VoterList $voterlist)
     {
-        return $user->owner === $adrema->owner
+        return $user->owner === $voterlist->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }

@@ -20,7 +20,7 @@ class SentMessagePolicy
      */
     public function view(User $user, SentMessage $sentMessage)
     {
-        return $user->owner === $sentMessage->adrema->owner
+        return $user->owner === $sentMessage->voterlist->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -34,7 +34,7 @@ class SentMessagePolicy
      */
     public function update(User $user, SentMessage $sentMessage)
     {
-        return $user->owner === $sentMessage->adrema->owner
+        return $user->owner === $sentMessage->voterlist->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -48,7 +48,7 @@ class SentMessagePolicy
      */
     public function delete(User $user, SentMessage $sentMessage)
     {
-        return $user->owner === $sentMessage->adrema->owner
+        return $user->owner === $sentMessage->voterlist->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }

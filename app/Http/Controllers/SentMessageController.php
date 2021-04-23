@@ -33,7 +33,7 @@ class SentMessageController extends Controller
             return $this->basicResponse(404, ['error' => 'No sent messages found for this batch']);
         }
 
-        abort_if($this->checkOwner($data->first()->adrema->owner), 403);
+        abort_if($this->checkOwner($data->first()->voterlist->owner), 403);
 
         // @TODO optimize this!
         return $this->basicResponse(

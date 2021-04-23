@@ -56,13 +56,11 @@ class Voter extends Model
      *
      * @var array
      */
-    protected $touches = ['adremas'];
+    protected $touches = ['voterlists'];
 
-    //
-
-    public function adremas()
+    public function voterlists()
     {
-        return $this->belongsToMany(Adrema::class)->withTimestamps();
+        return $this->belongsToMany(VoterList::class, 'voterlist_voter')->withTimestamps();
     }
 
     public function sentMessages()

@@ -23,7 +23,7 @@ class VoterFull extends JsonResource
             'phone_verified' => $this->phone_verified,
             'created_at'     => $this->created_at,
             'updated_at'     => $this->updated_at,
-            'adremas'        => AdremaBasic::collection($this->adremas),
+            'voterlists'        => VoterListBasic::collection($this->voterlists),
             'sentMessages'   => SentMessageBasic::collection($this->sentMessages),
         ];
     }

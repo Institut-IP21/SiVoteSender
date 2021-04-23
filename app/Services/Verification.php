@@ -23,7 +23,7 @@ class Verification
     {
         $batch = (string) Str::uuid();
 
-        $voters = $verification->adrema->voters;
+        $voters = $verification->voterlist->voters;
 
         Log::info(
             'Sending verification emails',
@@ -88,7 +88,7 @@ class Verification
         $sentMessage = $this->sender->sendEmail(
             $voter,
             $email,
-            $voter->adremas->first(),
+            $voter->voterlists->first(),
             $batch
         );
 
