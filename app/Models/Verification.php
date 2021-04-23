@@ -50,13 +50,13 @@ class Verification extends Model
      *
      * @var array
      */
-    protected $touches = ['voterlist'];
+    protected $touches = ['voterList'];
 
     //
 
-    public function voterlist()
+    public function voterList()
     {
-        return $this->belongsTo(VoterList::class);
+        return $this->belongsTo(VoterList::class, 'voterlist_id');
     }
 
     public function sentMessages()

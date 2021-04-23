@@ -56,11 +56,11 @@ class Voter extends Model
      *
      * @var array
      */
-    protected $touches = ['voterlists'];
+    protected $touches = ['voterLists'];
 
-    public function voterlists()
+    public function voterLists()
     {
-        return $this->belongsToMany(VoterList::class, 'voterlist_voter')->withTimestamps();
+        return $this->belongsToMany(VoterList::class, 'voterlist_voter', 'voter_id', 'voterlist_id')->withTimestamps();
     }
 
     public function sentMessages()

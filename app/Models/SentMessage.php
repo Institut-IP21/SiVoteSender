@@ -68,7 +68,7 @@ class SentMessage extends Model
      *
      * @var array
      */
-    protected $touches = ['voter', 'verification', 'voterlist'];
+    protected $touches = ['voter', 'verification', 'voterList'];
 
     //
 
@@ -90,7 +90,7 @@ class SentMessage extends Model
         return $this->belongsTo(Voter::class);
     }
 
-    public function voterlist()
+    public function voterList()
     {
         return $this->belongsTo(VoterList::class, 'voterlist_id');
     }

@@ -53,17 +53,17 @@ class VoterList extends Model
 
     public function voters()
     {
-        return $this->belongsToMany(Voter::class, 'voterlist_voter', 'voterlist_id')->withTimestamps();
+        return $this->belongsToMany(Voter::class, 'voterlist_voter', 'voterlist_id', 'voter_id')->withTimestamps();
     }
 
     public function sentMessages()
     {
-        return $this->hasMany(SentMessage::class);
+        return $this->hasMany(SentMessage::class, 'voterlist_id');
     }
 
     public function verifications()
     {
-        return $this->hasMany(Verification::class);
+        return $this->hasMany(Verification::class, 'voterlist_id');
     }
 
     //
