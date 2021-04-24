@@ -11,7 +11,6 @@ class VoterPolicy
 {
     use HandlesAuthorization;
 
-
     /**
      * Determine whether the user can view the model.
      *
