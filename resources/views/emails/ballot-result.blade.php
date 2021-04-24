@@ -1,9 +1,9 @@
 @component('mail::message', ['personalization' => $personalization])
 
-    {{ $template }}
+{{ $template }}
 
-    @component('mail::button', ['url' => $resultLink])
-        {{ __('emails.result.link') }}
-    @endcomponent
+@component('mail::button', ['url' => $resultLink])
+{{ __('emails.result.link') }}
+@endcomponent
 
 @endcomponent
