@@ -9,5 +9,8 @@ return [
     'invite' => [
         'subject' => 'eGlasovanje: vaša glasovnica',
         'btnConfirm' => 'Odpri glasovnico'
+    ],
+    'result' => [
+        'link' => 'Izid glasovanja'
     ]
 ];

@@ -5,6 +5,7 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Auth;
 
 class BallotResult extends Mailable
 {
@@ -14,18 +15,20 @@ class BallotResult extends Mailable
     public $subject;
     public $csv;
     public $personalization;
+    public $resultLink;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(string $template, string $subject, string $csv)
+    public function __construct(string $template, string $subject, string $csv, string $resultLink)
     {
         $this->template = $template;
         $this->subject  = $subject;
         $this->csv  = $csv;
-        $this->personalization = \Auth::user()->personalization;
+        $this->resultLink = $resultLink;
+        $this->personalization = Auth::user()->personalization;
     }
 
     /**
@@ -37,7 +40,7 @@ class BallotResult extends Mailable
     {
         return $this
             ->subject($this->subject ?? __('emails.result.subject'))
-            ->markdown('emails.ballot-result')
+            ->markdown('emails.ballot-result', [ 'resultLink' => $this->resultLink ])
             ->attachData($this->csv, 'results.csv', [
                 'mime' => 'text/csv',
             ]);

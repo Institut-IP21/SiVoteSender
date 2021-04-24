@@ -309,19 +309,22 @@ class VoterListController extends Controller
             'csv' =>
             'required|string',
 
+            'resultLink' =>
+            'required|string',
         ];
 
         if ($errors = $this->findErrors($params, $settings)) {
             return $errors;
         }
 
-        $batch    = $params['batch'];
-        $template = $params['template'];
-        $subject  = $params['subject'];
-        $csv      = $params['csv'];
+        $batch      = $params['batch'];
+        $template   = $params['template'];
+        $subject    = $params['subject'];
+        $csv        = $params['csv'];
+        $resultLink = $params['resultLink'];
 
         try {
-            $status = $service->sendResults($voterlist, $batch, $template, $subject, $csv);
+            $status = $service->sendResults($voterlist, $batch, $template, $subject, $csv, $resultLink);
         } catch (\Exception $e) {
             Log::alert('Error while sending results', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);

@@ -79,7 +79,7 @@ class Ballot
         return true;
     }
 
-    public function sendResults(VoterList $voterlist, string $batch, string $template, string $subject, string $csv): bool
+    public function sendResults(VoterList $voterlist, string $batch, string $template, string $subject, string $csv, string $resultLink): bool
     {
         $voters = $voterlist->voters;
 
@@ -100,7 +100,7 @@ class Ballot
         }
 
         foreach ($voters as $voter) {
-            $email = new BallotResult($template, $subject, $csv);
+            $email = new BallotResult($template, $subject, $csv, $resultLink);
 
             $sentMessage = $this->sender->sendEmail($voter, $email, $voterlist, $batch);
 
