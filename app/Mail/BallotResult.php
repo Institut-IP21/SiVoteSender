@@ -40,7 +40,7 @@ class BallotResult extends Mailable
     {
         return $this
             ->subject($this->subject ?? __('emails.result.subject'))
-            ->markdown('emails.ballot-result', [ 'resultLink' => $this->resultLink ])
+            ->markdown('emails.ballot-result')
             ->attachData($this->csv, 'results.csv', [
                 'mime' => 'text/csv',
             ]);

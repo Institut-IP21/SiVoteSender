@@ -1,27 +1,27 @@
 @component('mail::layout')
-{{-- Header --}}
-@slot('header')
-@component('mail::header', ['personalization' => $personalization])
-{{ config('app.name') }}
-@endcomponent
-@endslot
+    {{-- Header --}}
+    @slot('header')
+        @component('mail::header', ['personalization' => $personalization])
+            {{ config('app.name') }}
+        @endcomponent
+    @endslot
 
-{{-- Body --}}
-{{ $slot }}
+    {{-- Body --}}
+    {{ $slot }}
 
-{{-- Subcopy --}}
-@isset($subcopy)
-@slot('subcopy')
-@component('mail::subcopy')
-{{ $subcopy }}
-@endcomponent
-@endslot
-@endisset
+    {{-- Subcopy --}}
+    @isset($subcopy)
+        @slot('subcopy')
+            @component('mail::subcopy')
+                {{ $subcopy }}
+            @endcomponent
+        @endslot
+    @endisset
 
-{{-- Footer --}}
-@slot('footer')
-@component('mail::footer')
-<a href="https://eglasovanje.si">eGlasovanje.si</a>
-@endcomponent
-@endslot
+    {{-- Footer --}}
+    @slot('footer')
+        @component('mail::footer')
+            <a href="https://eglasovanje.si">eGlasovanje.si</a>
+        @endcomponent
+    @endslot
 @endcomponent
