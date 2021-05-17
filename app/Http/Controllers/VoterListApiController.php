@@ -8,7 +8,6 @@ use App\Http\Resources\VoterBasic;
 use App\Models\VoterList;
 use App\Models\Voter;
 use App\Services\Ballot;
-use Illuminate\Database\Eloquent\Builder;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  * @Controller(prefix="api/voterlist")
  * @Middleware("api")
  */
-class VoterListController extends Controller
+class VoterListApiController extends Controller
 {
 
     /**
@@ -27,6 +26,15 @@ class VoterListController extends Controller
     public function show(VoterList $voterlist)
     {
         return new VoterListFull($voterlist);
+    }
+
+    /**
+     * @Get("/{voterlist}/basic", as="voterlist.showBasic")
+     * @Middleware("can:view,voterlist")
+     */
+    public function showBasic(VoterList $voterlist)
+    {
+        return new VoterListBasic($voterlist);
     }
 
     /**
