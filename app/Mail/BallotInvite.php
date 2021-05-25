@@ -2,13 +2,12 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
 class BallotInvite extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public $code;
     public $url;
@@ -21,7 +20,7 @@ class BallotInvite extends Mailable
      *
      * @return void
      */
-    public function __construct(string $code, string $url, string $template, string $subject)
+    public function __construct(string $code, string $url, string $template, string $subject, $personalization)
     {
         $template = str_replace('%%CODE%%', $code, $template);
         $template = str_replace('%%LINK%%', $url, $template);
@@ -32,7 +31,7 @@ class BallotInvite extends Mailable
         $this->url      = $url;
         $this->template = $template;
         $this->subject  = $subject;
-        $this->personalization = \Auth::user()->personalization;
+        $this->personalization = $personalization;
     }
 
     /**

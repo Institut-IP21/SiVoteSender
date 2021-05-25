@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Jobs\BallotInvite as JobsBallotInvite;
 use App\Mail\BallotInvite;
 use App\Mail\BallotResult;
 use App\Models\VoterList;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 
 class Ballot
@@ -47,17 +50,12 @@ class Ballot
         // Randomize both collections
         shuffle($codes);
         $voters->shuffle();
-
-        foreach ($voters as $voter) {
-            $code = array_pop($codes);
-
-            $email = new BallotInvite($code, $url, $template, $subject);
-
-            $sentMessage = $this->sender->sendEmail($voter, $email, $voterlist, $batch);
-
-            Log::debug('Sent invite', ['voter' => $voter->id, 'batch' => $batch]);
-        }
-
+        $personalization = Auth::user()->personalization;
+        Bus::batch($voters->map(function ($voter) use (&$codes, $url, $template, $subject, $voterlist, $batch, $personalization) {
+            return new JobsBallotInvite(array_pop($codes), $url, $template, $subject, $voter, $voterlist, $batch, $this->sender, $personalization);
+        }))
+            ->allowFailures(true)
+            ->dispatch();
         return true;
     }
 
@@ -71,9 +69,9 @@ class Ballot
         foreach ($to as $voter) {
             $code = "TESTCODE";
 
-            $email = new BallotInvite($code, $url, $template, $subject);
+            $email = new BallotInvite($code, $url, $template, $subject, Auth::user()->personalization);
 
-            $sentMessage = $this->sender->sendTestEmail($voter, $email);
+            $this->sender->sendTestEmail($voter, $email);
         }
 
         return true;

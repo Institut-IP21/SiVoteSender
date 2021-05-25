@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Mail;
 
 class Sender
 {
-
     public function sendEmail(Voter $voter, Mailable $mailable, $order, string $batch = ''): ?SentMessage
     {
         if ($voter->email_blocked) {
@@ -73,6 +72,6 @@ class Sender
             return false;
         }
 
-        return Mail::to($to)->queue($mailable);
+        return Mail::to($to)->send($mailable);
     }
 }
