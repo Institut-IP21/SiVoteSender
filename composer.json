@@ -13,7 +13,7 @@
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
-        "laravel/framework": "^8.12",
+        "laravel/framework": "^8.52.0",
         "laravel/horizon": "^5.4",
         "laravel/tinker": "^2.5",
         "laravelcollective/annotations": "^8.0",
@@ -21,10 +21,11 @@
         "predis/predis": "^1.1"
     },
     "require-dev": {
+        "brianium/paratest": "^6.3",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
         "mockery/mockery": "^1.4.2",
-        "nunomaduro/collision": "^5.0",
+        "nunomaduro/collision": "^5.6.0",
         "phpunit/phpunit": "^9.3.3",
         "spatie/laravel-tail": "^4.3"
     },
