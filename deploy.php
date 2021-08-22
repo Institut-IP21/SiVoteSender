@@ -46,9 +46,7 @@ task('deploy', [
     'deploy:prepare',
     'deploy:vendors',
     'artisan:storage:link',
-    'artisan:optimize',
-    'artisan:model:scan',
-    'artisan:route:scan',
+    'artisan:evote:cache',
     'artisan:migrate',
     'deploy:publish',
 ]);
@@ -71,6 +69,11 @@ task('artisan:model:scan', function () {
 task('artisan:route:scan', function () {
     cd('{{release_or_current_path}}');
     echo run('php artisan route:scan');
+});
+
+task('artisan:evote:cache', function () {
+    cd('{{release_or_current_path}}');
+    echo run('php artisan evote:cache');
 });
 
 after('deploy:failed', 'deploy:unlock');
