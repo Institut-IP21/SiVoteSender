@@ -11,3 +11,7 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 storage/framework/models.scanned.php
+
+/public/css
+/public/js
+/public/mix-manifest.json
