@@ -296,7 +296,7 @@ class VoterListApiController extends Controller
     }
 
     /**
- * @Post("/{voterlist}/send-session-invites", as="voterlist.session.invite")
+     * @Post("/{voterlist}/send-session-invites", as="voterlist.session.invite")
      * @Middleware("can:update,voterlist")
      */
     public function sendSessionInvites(Ballot $service, Request $request, VoterList $voterlist)
@@ -313,7 +313,6 @@ class VoterListApiController extends Controller
 
             // Email template, can have placeholders for:
             // %%CODE%% - the code that the user got
-            // %%LINK%% - voting link
             // Link is probably not needed as a btn is added automatically.
             'template' =>
             'required|string',
