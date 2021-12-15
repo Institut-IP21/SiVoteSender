@@ -9,7 +9,7 @@ require 'recipe/yarn.php';
 require 'contrib/php-fpm.php';
 require 'contrib/npm.php';
 
-set('application', 'SiVoteEngine');
+set('application', 'SiVoteSender');
 set('repository', 'git@github.com:Institut-IP21/SiVoteSender');
 set('php_fpm_version', '7.4');
 
