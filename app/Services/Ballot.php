@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Mail\BallotInvite;
 use App\Mail\BallotResult;
+use App\Mail\SessionInvite;
 use App\Models\VoterList;
 use Illuminate\Support\Facades\Log;
 
@@ -56,6 +57,47 @@ class Ballot
             $sentMessage = $this->sender->sendEmail($voter, $email, $voterlist, $batch);
 
             Log::debug('Sent invite', ['voter' => $voter->id, 'batch' => $batch]);
+        }
+
+        return true;
+    }
+
+    public function sendSessionInvites(VoterList $voterlist, array $codes, string $batch, string $template, string $subject): bool
+    {
+        $voters = $voterlist->voters;
+
+        Log::info(
+            'Sending session invite emails',
+            ['count' => count($voters), 'voterlist' => $voterlist->id, 'batch' => $batch]
+        );
+
+        // Check if the voterlist is valid
+        foreach ($voters as $voter) {
+            if (!$voter->email) {
+                Log::warning(
+                    'Tried to send a session invite to a voter with no email',
+                    ['voter' => $voter->id, 'voterlist' => $voterlist->id]
+                );
+                throw new \Exception("Voter " . $voter->id . " has no email!", 1);
+            }
+        }
+
+        if (count($codes) !== $voters->count()) {
+            Log::warning(
+                'Number of session codes and voters does not match',
+                ['voterlist' => $voterlist->id, 'codesCount' => count($codes), 'batch' => $batch]
+            );
+            throw new \Exception("Number of session codes and voters does not match", 2);
+        }
+
+        foreach ($voters as $voter) {
+            $code = array_shift($codes);
+
+            $email = new SessionInvite($code, $template, $subject);
+
+            $sentMessage = $this->sender->sendEmail($voter, $email, $voterlist, $batch);
+
+            Log::debug('Sent session invite', ['voter' => $voter->id, 'batch' => $batch]);
         }
 
         return true;

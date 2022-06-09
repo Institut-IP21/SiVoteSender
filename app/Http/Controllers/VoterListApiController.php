@@ -296,6 +296,58 @@ class VoterListApiController extends Controller
     }
 
     /**
+     * @Post("/{voterlist}/send-session-invites", as="voterlist.session.invite")
+     * @Middleware("can:update,voterlist")
+     */
+    public function sendSessionInvites(Ballot $service, Request $request, VoterList $voterlist)
+    {
+        $params = $request->all();
+        $settings = [
+            // UUID of the ballot
+            'batch' =>
+            'required|uuid',
+
+            // JSON Array of codes, should match in number to number of voters
+            'codes' =>
+            'required|array',
+
+            // Email template, can have placeholders for:
+            // %%CODE%% - the code that the user got
+            // Link is probably not needed as a btn is added automatically.
+            'template' =>
+            'required|string',
+
+            'subject' =>
+            'required|string',
+
+        ];
+
+        if ($errors = $this->findErrors($params, $settings)) {
+            return $errors;
+        }
+
+        if ($voterlist->checkVoterListHasBlockedVoters()) {
+            return $this->basicResponse(409, [
+                'error' => 'VoterList contains blocked voters.'
+            ]);
+        }
+
+        $codes    = $params['codes'];
+        $batch    = $params['batch'];
+        $template = $params['template'];
+        $subject  = $params['subject'];
+
+        try {
+            $status = $service->sendSessionInvites($voterlist, $codes, $batch, $template, $subject);
+        } catch (\Exception $e) {
+            Log::alert('Error while sending session invites', ['error' => $e->getMessage()]);
+            return $this->basicResponse(500, ['error' => $e->getMessage()]);
+        }
+
+        return $this->basicResponse(200);
+    }
+
+    /**
      * @Post("/{voterlist}/send-results", as="voterlist.results")
      * @Middleware("can:update,voterlist")
      */
