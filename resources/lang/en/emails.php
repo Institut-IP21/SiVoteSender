@@ -9,5 +9,8 @@ return [
     'invite' => [
         'subject' => 'E-voting: your ballot',
         'btnConfirm' => 'Open your ballot'
+    ],
+    'result' => [
+        'link' => 'Ballot results'
     ]
 ];
