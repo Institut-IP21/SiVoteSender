@@ -14,7 +14,7 @@ Amazon SNS
 
 # Development
 
-ngrok http sender.evote.dev:80
+ngrok http sender.evote.local:80
 then update the subscription:
 
 <https://eu-central-1.console.aws.amazon.com/sns/v3/home?region=eu-central-1#/subscriptions>
