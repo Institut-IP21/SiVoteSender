@@ -202,8 +202,8 @@ class VerificationController extends Controller
         // }
 
         $params = [
-            'subject' => __('Email verification'),
-            'template' => __('Please verify your email address.')
+            'subject' => __('verification.email_subject_template'),
+            'template' => __('verification.email_body_template')
         ];
 
         try {
