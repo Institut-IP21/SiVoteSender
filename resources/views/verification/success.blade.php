@@ -20,7 +20,7 @@
             margin: auto;
             text-align: left;
             background-color: #fff;
-            padding: 30px;
+            height: 100vh;
         }
 
         h1 {
@@ -43,27 +43,31 @@
             font-size: 14px;
             color: #718096;
             text-align: center;
-            padding-top: 5%;
+            padding-top: 20px;
+            padding-bottom: 50px;
         }
     </style>
 </head>
 
-<body>
-    <main>
-        <div style="margin-left: auto; margin-right: auto; width: 100px; padding-top: 20%; padding-bottom: 5%;">
-            <svg class="checkmark" width="100px" height="100px" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-                <!-- Circle -->
-                <circle cx="25" cy="25" r="22" stroke="gray" stroke-width="2" fill="none" />
+<body style="margin: 0; padding: 0;">
+    <main style="display: flex; flex-direction:column; justify-content: center;">
+        <div style="">
+            <div style="margin-left: auto; margin-right: auto; width: 100px; padding-bottom: 20px;">
+                <svg class="checkmark" width="100px" height="100px" viewBox="0 0 50 50"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <!-- Circle -->
+                    <circle cx="25" cy="25" r="22" stroke="gray" stroke-width="2" fill="none" />
 
-                <!-- Checkmark -->
-                <path class="checkmark" fill="none" stroke="gray" stroke-width="2" d="M15,24 l8,8 l16,-16"
-                    stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+                    <!-- Checkmark -->
+                    <path class="checkmark" fill="none" stroke="gray" stroke-width="2" d="M15,24 l8,8 l16,-16"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <h1>{{ __('verification.success.title') }}</h1>
+            <br />
+            <p class="text">{!! __('verification.success.text') !!}</p>
+            <p class="exittext">{{ __('verification.success.button') }}</p>
         </div>
-        <h1>{{ __('verification.success.title') }}</h1>
-        <br />
-        <p class="text">{!! __('verification.success.text') !!}</p>
-        <p class="exittext">{{ __('verification.success.button') }}</p>
     </main>
 </body>
 
