@@ -203,7 +203,10 @@ class VerificationController extends Controller
 
         $params = [
             'subject' => __('verification.email_subject_template'),
-            'template' => __('verification.email_body_template')
+            'template' => __('verification.email_body_template', [
+                'org' => $voter->voterLists
+                ]
+            )
         ];
 
         try {
