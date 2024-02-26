@@ -1,6 +1,4 @@
-# E-voting SENDER
-
-# SiVote Engine
+# SiVote Sender
 
 SiVote is a internet voting that supports **secret ballots** and is intended **for private organizations**. System is comprised of at least two modules - you'll also need the [SiVote Engine](https://github.com/Institut-IP21/SiVoteEngine).
 
