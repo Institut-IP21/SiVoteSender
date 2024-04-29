@@ -11,9 +11,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Log;
 use Http;
 
-/**
- * @Controller(prefix="sns")
- */
 class AmazonController extends Controller
 {
 
@@ -24,9 +21,6 @@ class AmazonController extends Controller
     const SUBTYPE_BOUNCE = 'Bounce';
     const SUBTYPE_COMPLAINT = 'Complaint';
 
-    /**
-     * @Post("/webhook", as="email.sns.notifications")
-     */
     public function post(Request $request)
     {
         $data = json_decode($request->getContent());

@@ -69,11 +69,6 @@ task('artisan:model:scan', function () {
     echo run('php artisan model:scan');
 });
 
-task('artisan:route:scan', function () {
-    cd('{{release_or_current_path}}');
-    echo run('php artisan route:scan');
-});
-
 task('artisan:evote:cache', function () {
     cd('{{release_or_current_path}}');
     echo run('php artisan evote:cache');

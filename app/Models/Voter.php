@@ -9,8 +9,6 @@ use Dyrynda\Database\Support\CascadeSoftDeletes;
 
 /**
  * Voter
- *
- * @Bind("voter")
  */
 class Voter extends Model
 {

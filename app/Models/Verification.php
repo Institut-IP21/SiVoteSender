@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Verification
- *
- * @Bind("verification")
  */
 class Verification extends Model
 {

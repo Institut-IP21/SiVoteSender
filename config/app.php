@@ -173,7 +173,6 @@ return [
         /*
          * Package Service Providers...
          */
-        App\Providers\AnnotationsServiceProvider::class,
 
         /*
          * Application Service Providers...

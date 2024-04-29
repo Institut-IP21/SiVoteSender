@@ -6,25 +6,14 @@ use App\Http\Resources\SentMessageFull;
 use App\Models\SentMessage;
 use Illuminate\Http\Request;
 
-/**
- * @Controller(prefix="api/messages")
- * @Middleware("api")
- */
 class SentMessageController extends Controller
 {
 
-    /**
-     * @Get("/{sentMessage}", as="sentMessage.show")
-     * @Middleware("can:view,sentMessage")
-     */
     public function show(SentMessage $sentMessage)
     {
         return new SentMessageFull($sentMessage);
     }
 
-    /**
-     * @Get("/batch/{batchId}/stats", as="sentMessage.batch.stats")
-     */
     public function batchStats($batchId)
     {
         $data = SentMessage::where('batch_uuid', $batchId)->get();

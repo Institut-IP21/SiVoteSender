@@ -12,26 +12,14 @@ use App\Services\Verification as ServicesVerification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
-/**
- * @Controller(prefix="api/verification")
- * @Middleware("api")
- */
 class VerificationController extends Controller
 {
 
-    /**
-     * @Get("/{verification}", as="verification.show")
-     * @Middleware("can:view,verification")
-     */
     public function show(Verification $verification)
     {
         return new VerificationFull($verification);
     }
 
-    /**
-     * @Get("/", as="verification.list")
-     * @Middleware("can:viewAny,App\Models\Verification")
-     */
     public function list(Request $request)
     {
         $params = $request->all();
@@ -79,10 +67,6 @@ class VerificationController extends Controller
         );
     }
 
-    /**
-     * @Delete("/{verification}", as="verification.remove")
-     * @Middleware("can:delete,verification")
-     */
     public function delete(Verification $verification)
     {
         if (!empty($verification->sent_at)) {
@@ -93,9 +77,6 @@ class VerificationController extends Controller
         return $this->basicResponse(200);
     }
 
-    /**
-     * @Post("/", as="verification.create")
-     */
     public function create(Request $request)
     {
 
@@ -131,10 +112,6 @@ class VerificationController extends Controller
         return new VerificationFull($verification);
     }
 
-    /**
-     * @Post("/{verification}", as="verification.update")
-     * @Middleware("can:update,verification")
-     */
     public function update(Request $request, Verification $verification)
     {
         $params = $request->all();
@@ -168,10 +145,6 @@ class VerificationController extends Controller
         return new VerificationFull($verification);
     }
 
-    /**
-     * @Get("/{verification}/start", as="verification.start")
-     * @Middleware("can:update,verification")
-     */
     public function start(ServicesVerification $service, Verification $verification)
     {
         try {
@@ -183,10 +156,6 @@ class VerificationController extends Controller
         return $this->basicResponse(200);
     }
 
-    /**
-     * @Get("/single/{voter}/start", as="verification.single.start")
-     * @Middleware("can:update,voter")
-     */
     public function startSingle(Request $request, ServicesVerification $service, Voter $voter)
     {
         // $params = $request->all();
@@ -222,10 +191,6 @@ class VerificationController extends Controller
         return $this->basicResponse(200);
     }
 
-    /**
-     * @Post("/{verification}/start/test", as="verification.start.test")
-     * @Middleware("can:update,verification")
-     */
     public function startTest(Request $request, ServicesVerification $service, Verification $verification)
     {
         $params = $request->all();

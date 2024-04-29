@@ -12,35 +12,19 @@ use App\Services\Ballot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-/**
- * @Controller(prefix="api/voterlist")
- * @Middleware("api")
- */
 class VoterListApiController extends Controller
 {
 
-    /**
-     * @Get("/{voterlist}", as="voterlist.show")
-     * @Middleware("can:view,voterlist")
-     */
     public function show(VoterList $voterlist)
     {
         return new VoterListFull($voterlist);
     }
 
-    /**
-     * @Get("/{voterlist}/basic", as="voterlist.showBasic")
-     * @Middleware("can:view,voterlist")
-     */
     public function showBasic(VoterList $voterlist)
     {
         return new VoterListBasic($voterlist);
     }
 
-    /**
-     * @Get("/", as="voterlist.list")
-     * @Middleware("can:viewAny,App\Models\VoterList")
-     */
     public function list(Request $request)
     {
         $params = $request->all();
@@ -77,10 +61,6 @@ class VoterListApiController extends Controller
         );
     }
 
-    /**
-     * @Get("/{voterlist}/voters", as="voterlist.voters.list")
-     * @Middleware("can:view,voterlist")
-     */
     public function listVoters(Request $request, VoterList $voterlist)
     {
         $params = $request->all();
@@ -115,20 +95,12 @@ class VoterListApiController extends Controller
         );
     }
 
-    /**
-     * @Delete("/{voterlist}", as="voterlist.remove")
-     * @Middleware("can:delete,voterlist")
-     */
     public function delete(VoterList $voterlist)
     {
         $voterlist->delete();
         return $this->basicResponse(200);
     }
 
-    /**
-     * @Post("/", as="voterlist.create")
-     * @Middleware("can:create,App\Models\VoterList")
-     */
     public function create(Request $request)
     {
         $params = $request->all();
@@ -151,10 +123,6 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    /**
-     * @Post("/{voterlist}", as="voterlist.update")
-     * @Middleware("can:update,voterlist")
-     */
     public function update(Request $request, VoterList $voterlist)
     {
         $params = $request->all();
@@ -173,10 +141,6 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    /**
-     * @Post("/{voterlist}/voters", as="voterlist.voters.add")
-     * @Middleware("can:update,voterlist")
-     */
     public function addVoters(Request $request, VoterList $voterlist)
     {
         $params = $request->all();
@@ -212,10 +176,6 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    /**
-     * @Delete("/{voterlist}/voters", as="voterlist.voters.remove")
-     * @Middleware("can:update,voterlist")
-     */
     public function removeVoters(Request $request, VoterList $voterlist)
     {
         $params = $request->all();
@@ -237,10 +197,6 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    /**
-     * @Post("/{voterlist}/send-invites", as="voterlist.invite")
-     * @Middleware("can:update,voterlist")
-     */
     public function sendInvites(Ballot $service, Request $request, VoterList $voterlist)
     {
         $params = $request->all();
@@ -295,10 +251,6 @@ class VoterListApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    /**
-     * @Post("/{voterlist}/send-session-invites", as="voterlist.session.invite")
-     * @Middleware("can:update,voterlist")
-     */
     public function sendSessionInvites(Ballot $service, Request $request, VoterList $voterlist)
     {
         $params = $request->all();
@@ -347,10 +299,6 @@ class VoterListApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    /**
-     * @Post("/{voterlist}/send-results", as="voterlist.results")
-     * @Middleware("can:update,voterlist")
-     */
     public function sendResults(Ballot $service, Request $request, VoterList $voterlist)
     {
 
@@ -393,9 +341,6 @@ class VoterListApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    /**
-     * @Post("send/test", as="voterlist.start.test")
-     */
     public function startTest(Ballot $service, Request $request)
     {
         $params = $request->all();

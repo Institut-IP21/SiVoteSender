@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Sent message
- *
- * @Bind("sentMessage")
  */
 class SentMessage extends Model
 {
