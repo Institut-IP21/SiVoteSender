@@ -3,7 +3,7 @@
 use App\Http\Controllers\AmazonController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\SentMessageController;
-use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\VerificationApiController;
 use App\Http\Controllers\VoterController;
 use App\Http\Controllers\VoterListApiController;
 use Illuminate\Support\Facades\Route;
@@ -37,15 +37,15 @@ Route::middleware('api')->prefix('messages')->group(function () {
 });
 
 Route::middleware('api')->prefix('verification')->group(function () {
-    Route::get('/{verification}', [VerificationController::class, 'show'])->name('verification.show')->middleware('can:view,verification');
-    Route::get('/', [VerificationController::class, 'list'])->name('verification.list')->middleware('can:viewAny,App\Models\Verification');
+    Route::get('/{verification}', [VerificationApiController::class, 'show'])->name('verification.show')->middleware('can:view,verification');
+    Route::get('/', [VerificationApiController::class, 'list'])->name('verification.list')->middleware('can:viewAny,App\Models\Verification');
 
-    Route::delete('/{verification}', [VerificationController::class, 'delete'])->name('verification.delete')->middleware('can:delete,verification');
-    Route::post('/', [VerificationController::class, 'create'])->name('verification.create')->middleware('can:create,App\Models\Verification');
-    Route::post('/{verification}', [VerificationController::class, 'update'])->name('verification.update')->middleware('can:update,verification');
-    Route::get('/{verification}/start', [VerificationController::class, 'start'])->name('verification.start')->middleware('can:update,verification');
-    Route::get('/single/{voter}/start', [VerificationController::class, 'startSingle'])->name('verification.start.single')->middleware('can:update,voter');
-    Route::post('/{verification}/start/test', [VerificationController::class, 'startTest'])->name('verification.start.test')->middleware('can:update,verification');
+    Route::delete('/{verification}', [VerificationApiController::class, 'delete'])->name('verification.delete')->middleware('can:delete,verification');
+    Route::post('/', [VerificationApiController::class, 'create'])->name('verification.create')->middleware('can:create,verification');
+    Route::post('/{verification}', [VerificationApiController::class, 'update'])->name('verification.update')->middleware('can:update,verification');
+    Route::get('/{verification}/start', [VerificationApiController::class, 'start'])->name('verification.start')->middleware('can:update,verification');
+    Route::get('/single/{voter}/start', [VerificationApiController::class, 'startSingle'])->name('verification.start.single')->middleware('can:update,voter');
+    Route::post('/{verification}/start/test', [VerificationApiController::class, 'startTest'])->name('verification.start.test')->middleware('can:update,verification');
 });
 
 Route::middleware('api')->prefix('voter')->group(function () {

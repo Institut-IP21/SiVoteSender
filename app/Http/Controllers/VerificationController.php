@@ -12,7 +12,7 @@ use App\Services\Verification as ServicesVerification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
-class VerificationController extends Controller
+class VerificationApiController extends Controller
 {
 
     public function show(Verification $verification)
