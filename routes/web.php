@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\VerificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('home');
 });
+
+Route::get('/verification/{verification}/{voter}', [VerificationController::class, 'verify'])->name('verification.verify');
+Route::get('/verification/{verification}/{voter}/email', [VerificationController::class, 'verifySingleEmail'])->name('verification.verify.single.email');
+Route::get('/verification/{verification}/{voter}/phone', [VerificationController::class, 'verifySinglePhone'])->name('verification.verify.single.phone');

@@ -15,6 +15,16 @@ class VerificationPolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
+     * @return mixed
+     */
+    public function create(User $user)
+    {
+        return $user->owner;
+    }
+    /**
+     * Determine whether the user can view the model.
+     *
+     * @param  \App\Models\User  $user
      * @param  \App\Models\Verification  $verification
      * @return mixed
      */

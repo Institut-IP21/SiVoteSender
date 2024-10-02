@@ -8,16 +8,9 @@ use App\Models\Voter;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-/**
- * @Controller(prefix="verification")
- * @Middleware("web")
- */
 class VerificationController extends Controller
 {
 
-    /**
-     * @Get("/{verification}/{voter}/", as="verification.verify")
-     */
     public function verify(Request $request, Verification $verification, Voter $voter)
     {
         if (!$request->hasValidSignature()) {
@@ -48,9 +41,6 @@ class VerificationController extends Controller
         return view('verification.success');
     }
 
-    /**
-     * @Get("/single/{voter}/email", as="verification.verify.single.email")
-     */
     public function verifySingleEmail(Request $request, Voter $voter)
     {
         if (!$request->hasValidSignature()) {
@@ -64,9 +54,6 @@ class VerificationController extends Controller
         return view('verification.success');
     }
 
-    /**
-     * @Get("/single/{voter}/phone", as="verification.verify.single.phone")
-     */
     public function verifySinglePhone(Request $request, Voter $voter)
     {
         if (!$request->hasValidSignature()) {
