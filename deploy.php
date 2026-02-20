@@ -54,14 +54,14 @@ task('deploy', [
     'deploy:publish',
 ]);
 
-task('yarn', function () {
+task('bun:install', function () {
     cd('{{release_or_current_path}}');
-    run('yarn');
+    run('bun install');
 });
 
-task('yarn:production', function () {
+task('bun:production', function () {
     cd('{{release_or_current_path}}');
-    run('yarn production');
+    run('bun run production');
 });
 
 task('artisan:model:scan', function () {
