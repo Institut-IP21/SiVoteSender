@@ -18,6 +18,6 @@ Route::get('/', function () {
     return view('home');
 });
 
+Route::get('/verification/{voter}/email', [VerificationController::class, 'verifySingleEmail'])->name('verification.verify.single.email');
+Route::get('/verification/{voter}/phone', [VerificationController::class, 'verifySinglePhone'])->name('verification.verify.single.phone');
 Route::get('/verification/{verification}/{voter}', [VerificationController::class, 'verify'])->name('verification.verify');
-Route::get('/verification/{verification}/{voter}/email', [VerificationController::class, 'verifySingleEmail'])->name('verification.verify.single.email');
-Route::get('/verification/{verification}/{voter}/phone', [VerificationController::class, 'verifySinglePhone'])->name('verification.verify.single.phone');

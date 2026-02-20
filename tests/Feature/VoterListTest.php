@@ -9,23 +9,56 @@ use Str;
 
 class VoterListTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->owner = 'c1c88f6a-f437-4080-80f0-fe40f596c050';
     }
 
+    /**
+     * Create a voterlist via the API and return its ID.
+     */
+    protected function createVoterList(string $title = 'Test VoterList')
+    {
+        $response = $this->withHeaders([
+            'Authorization' => $this->token,
+            'Owner' => $this->owner,
+        ])->post('/api/voterlist', ['title' => $title]);
+
+        $response->assertSuccessful();
+
+        return $response->json()['data']['id'];
+    }
+
+    /**
+     * Add two voters to a voterlist via the API and return the first voter's ID.
+     */
+    protected function addVotersToList(string $voterlistId): string
+    {
+        $response = $this->withHeaders([
+            'Authorization' => $this->token,
+            'Owner' => $this->owner,
+        ])->post('/api/voterlist/' . $voterlistId . '/voters', [
+            'voters' => json_encode([
+                ['title' => 'Test 1', 'email' => 'test1@example.org'],
+                ['title' => 'Test 2', 'email' => 'test2@example.org'],
+            ]),
+        ]);
+
+        $response->assertSuccessful();
+
+        return $response->json()['data']['voters'][0]['id'];
+    }
+
     public function testMissingAuth()
     {
         $response = $this
-            ->withHeaders(
-                [
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->get(
-                '/api/voterlist',
-            );
+            ->withHeaders([
+                'Owner' => $this->owner,
+            ])
+            ->get('/api/voterlist');
 
         $response->assertUnauthorized();
     }
@@ -33,14 +66,10 @@ class VoterListTest extends TestCase
     public function testMissingOwner()
     {
         $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                ]
-            )
-            ->get(
-                '/api/voterlist',
-            );
+            ->withHeaders([
+                'Authorization' => $this->token,
+            ])
+            ->get('/api/voterlist');
 
         $response->assertUnauthorized();
     }
@@ -50,130 +79,87 @@ class VoterListTest extends TestCase
         $title = "Test VoterList";
 
         $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->post(
-                '/api/voterlist',
-                [
-                    'title' => $title,
-                ]
-            );
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => $this->owner,
+            ])
+            ->post('/api/voterlist', [
+                'title' => $title,
+            ]);
 
         $response->assertSuccessful();
         $response->assertJsonFragment(['title' => $title]);
         $response->assertJsonFragment(['voters' => 0]);
         $response->assertJsonFragment(['owner' => $this->owner]);
-
-        $data = $response->json();
-
-        return $data['data']['id'];
     }
 
-    /**
-     * @depends testCreateVoterList
-     */
-    public function testWrongOwner($id)
+    public function testWrongOwner()
     {
+        $id = $this->createVoterList();
+
         $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => "wrong-owner",
-                ]
-            )
-            ->get(
-                '/api/voterlist/' . $id,
-            );
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => "wrong-owner",
+            ])
+            ->get('/api/voterlist/' . $id);
 
         $response->assertStatus(403);
     }
 
-    /**
-     * @depends testCreateVoterList
-     */
-    public function testGetVoterList($id)
+    public function testGetVoterList()
     {
         $title = "Test VoterList";
+        $id = $this->createVoterList($title);
 
         $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->get(
-                '/api/voterlist/' . $id,
-            );
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => $this->owner,
+            ])
+            ->get('/api/voterlist/' . $id);
 
         $response->assertSuccessful();
         $response->assertJsonFragment(['title' => $title]);
         $response->assertJsonFragment(['voters' => 0]);
         $response->assertJsonFragment(['owner' => $this->owner]);
-
-        return $id;
     }
 
-    /**
-     * @depends testGetVoterList
-     */
-    public function testUpdateVoterList($id)
+    public function testUpdateVoterList()
     {
+        $id = $this->createVoterList();
         $title = "Test VoterList NEW";
 
         $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->post(
-                '/api/voterlist/' . $id,
-                [
-                    'title' => $title
-                ]
-            );
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => $this->owner,
+            ])
+            ->post('/api/voterlist/' . $id, [
+                'title' => $title,
+            ]);
 
         $response->assertSuccessful();
         $response->assertJsonFragment(['title' => $title]);
         $response->assertJsonFragment(['voters' => 0]);
         $response->assertJsonFragment(['owner' => $this->owner]);
-
-        return $id;
     }
 
-    /**
-     * @depends testUpdateVoterList
-     */
-    public function testAddVoters($id)
+    public function testAddVoters()
     {
+        $id = $this->createVoterList();
+
         $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->post(
-                '/api/voterlist/' . $id . '/voters',
-                [
-                    'voters' => json_encode([
-                        [
-                            'title' => 'Test 1',
-                            'email' => 'test1@example.org'
-                        ],
-                        [
-                            'title' => 'Test 2',
-                            'email' => 'test2@example.org'
-                        ]
-                    ])
-                ]
-            );
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => $this->owner,
+            ])
+            ->post('/api/voterlist/' . $id . '/voters', [
+                'voters' => json_encode([
+                    ['title' => 'Test 1', 'email' => 'test1@example.org'],
+                    ['title' => 'Test 2', 'email' => 'test2@example.org'],
+                ]),
+            ]);
 
         $response->assertSuccessful();
         $response->assertJsonFragment(['title' => 'Test 1']);
@@ -183,64 +169,39 @@ class VoterListTest extends TestCase
         $response->assertJsonFragment(['voters_email_verified' => 0]);
         $response->assertJsonFragment(['sentMessages' => 0]);
         $response->assertJsonFragment(['owner' => $this->owner]);
-
-        $data = $response->json();
-
-        return [$id, $data['data']['voters'][0]['id']];
     }
 
-    /**
-     * @depends testAddVoters
-     */
-    public function testGetListOfVotersForVoterList($data)
+    public function testGetListOfVotersForVoterList()
     {
-        $voterId = $data[1];
-        $voterlistId = $data[0];
+        $voterlistId = $this->createVoterList();
+        $voterId = $this->addVotersToList($voterlistId);
 
         $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->get(
-                '/api/voterlist/' . $voterlistId . '/voters?sort_by=id&sort_direction=desc'
-            );
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => $this->owner,
+            ])
+            ->get('/api/voterlist/' . $voterlistId . '/voters?sort_by=id&sort_direction=desc');
 
         $response->assertSuccessful();
-        $response->assertJsonFragment(['id' => $voterId]);
+        $response->assertJsonFragment(['id' => (int) $voterId]);
         $response->assertJsonFragment(['email' => 'test1@example.org']);
-        $response->assertJsonCount(2, $key = 'data');
-
-        return $data;
+        $response->assertJsonCount(2, 'data');
     }
 
-    /**
-     * @depends testGetListOfVotersForVoterList
-     */
-    public function testRemoveVoters($data)
+    public function testRemoveVoters()
     {
-        $voterId = $data[1];
-        $voterlistId = $data[0];
+        $voterlistId = $this->createVoterList();
+        $voterId = $this->addVotersToList($voterlistId);
 
         $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->delete(
-                '/api/voterlist/' . $voterlistId . '/voters',
-                [
-                    'voters' => json_encode(
-                        [
-                            $voterId
-                        ]
-                    )
-                ]
-            );
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => $this->owner,
+            ])
+            ->delete('/api/voterlist/' . $voterlistId . '/voters', [
+                'voters' => json_encode([$voterId]),
+            ]);
 
         $response->assertSuccessful();
         $response->assertJsonMissing(['title' => 'Test 1']);
@@ -252,64 +213,34 @@ class VoterListTest extends TestCase
         $response->assertJsonFragment(['owner' => $this->owner]);
     }
 
-    /**
-     * @depends testUpdateVoterList
-     */
-    public function testGetListOfVoterLists($id)
+    public function testGetListOfVoterLists()
     {
-        $title = "Test VoterList NEW";
+        $title = "Test VoterList";
+        $id = $this->createVoterList($title);
 
         $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->get(
-                '/api/voterlist?sort_by=id&sort_direction=desc',
-            );
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => $this->owner,
+            ])
+            ->get('/api/voterlist?sort_by=id&sort_direction=desc');
 
         $response->assertSuccessful();
         $response->assertJsonFragment(['title' => $title]);
         $response->assertJsonFragment(['id' => $id]);
         $response->assertJsonFragment(['owner' => $this->owner]);
-
-        return $id;
     }
 
-    /**
-     * @depends testAddVoters
-     */
     public function testRemoveVoterList()
     {
-        $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->post(
-                '/api/voterlist',
-                [
-                    'title' => 'TBD',
-                ]
-            );
-
-        $response->assertSuccessful();
-        $id = $response->json()['data']['id'];
+        $id = $this->createVoterList('TBD');
 
         $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->delete(
-                '/api/voterlist/' . $id,
-            );
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => $this->owner,
+            ])
+            ->delete('/api/voterlist/' . $id);
 
         $response->assertSuccessful();
     }

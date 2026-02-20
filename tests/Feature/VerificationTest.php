@@ -14,11 +14,47 @@ use App\Models\Voter;
 
 class VerificationTest extends TestCase
 {
+    use RefreshDatabase;
+
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->owner = 'a2c88f6a-f437-4080-80f0-fe40f596c050';
+    }
+
+    /**
+     * Create a voterlist via the API and return its ID.
+     */
+    protected function createVoterList(string $title = 'Test VoterList')
+    {
+        $response = $this->withHeaders([
+            'Authorization' => $this->token,
+            'Owner' => $this->owner,
+        ])->post('/api/voterlist', ['title' => $title]);
+
+        $response->assertSuccessful();
+
+        return $response->json()['data']['id'];
+    }
+
+    /**
+     * Create a verification via the API and return its ID.
+     */
+    protected function createVerification($voterlistId)
+    {
+        $response = $this->withHeaders([
+            'Authorization' => $this->token,
+            'Owner' => $this->owner,
+        ])->post('/api/verification', [
+            'voterlist_id' => $voterlistId,
+            'template' => 'Template',
+            'subject' => 'Subject',
+        ]);
+
+        $response->assertSuccessful();
+
+        return $response->json()['data']['id'];
     }
 
     public function testMissingAuth()
@@ -55,39 +91,10 @@ class VerificationTest extends TestCase
     //
     //
 
-    public function testCreateVoterList()
+    public function testCreateVerification()
     {
-        $title = "Test VoterList";
+        $voterlistId = $this->createVoterList();
 
-        $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->post(
-                '/api/voterlist',
-                [
-                    'title' => $title,
-                ]
-            );
-
-        $response->assertSuccessful();
-        $response->assertJsonFragment(['title' => $title]);
-        $response->assertJsonFragment(['voters' => 0]);
-        $response->assertJsonFragment(['owner' => $this->owner]);
-
-        $data = $response->json();
-
-        return $data['data']['id'];
-    }
-
-    /**
-     * @depends testCreateVoterList
-     */
-    public function testCreateVerification($voterlistId)
-    {
         $response = $this
             ->withHeaders(
                 [
@@ -110,18 +117,12 @@ class VerificationTest extends TestCase
         $response->assertJsonFragment(['owner' => $this->owner]);
         $response->assertJsonFragment(['sent_at' => null]);
         $response->assertJsonFragment(['redirect_url' => null]);
-
-        $data = $response->json();
-
-        return [$voterlistId, $data['data']['id']];
     }
 
-    /**
-     * @depends testCreateVerification
-     */
-    public function testUpdateVerification($data)
+    public function testUpdateVerification()
     {
-        list($voterlistId, $verificationId) = $data;
+        $voterlistId = $this->createVoterList();
+        $verificationId = $this->createVerification($voterlistId);
 
         $response = $this
             ->withHeaders(
@@ -145,34 +146,12 @@ class VerificationTest extends TestCase
         $response->assertJsonFragment(['owner' => $this->owner]);
         $response->assertJsonFragment(['sent_at' => null]);
         $response->assertJsonFragment(['redirect_url' => null]);
-
-        return [$voterlistId, $verificationId];
     }
 
-    /**
-     * @depends testUpdateVerification
-     */
-    public function testTestStartVerification($data)
+    public function testTestStartVerification()
     {
-        list($voterlistId, $verificationId) = $data;
-
-        // Resetting values
-        $response = $this
-            ->withHeaders(
-                [
-                    'Authorization' => $this->token,
-                    'Owner' => $this->owner,
-                ]
-            )
-            ->post(
-                '/api/verification/' . $verificationId,
-                [
-                    'template'  => "Template",
-                    'subject'   => "Subject",
-                ]
-            );
-
-        $response->assertSuccessful();
+        $voterlistId = $this->createVoterList();
+        $verificationId = $this->createVerification($voterlistId);
 
         Mail::fake();
 
@@ -214,9 +193,6 @@ class VerificationTest extends TestCase
                     && $mail->template == 'Template';
             }
         );
-
-
-        return [$voterlistId, $verificationId];
     }
 
 
@@ -354,6 +330,7 @@ class VerificationTest extends TestCase
 
         $voter = $voter->fresh();
         $this->assertNull($voter->email_verified);
+
         $response = $this->get($link);
 
         $voter = $voter->fresh();
