@@ -23,6 +23,10 @@ return [
         'authlist' => explode(',', env('API_TOKEN_LIST')),
     ],
 
+    'cli' => [
+        'default_owner' => env('CLI_DEFAULT_OWNER'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
