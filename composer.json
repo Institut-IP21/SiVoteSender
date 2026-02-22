@@ -14,9 +14,7 @@
         "dyrynda/laravel-cascade-soft-deletes": "^4.0",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^12.0",
-        "laravel/horizon": "^5.29",
         "laravel/tinker": "^2.5",
-        "predis/predis": "^3.0",
         "vlucas/phpdotenv": "^5.3"
     },
     "require-dev": {

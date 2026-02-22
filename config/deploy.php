@@ -60,7 +60,7 @@ return [
             'artisan:storage:link',
             'artisan:optimize',
             'artisan:migrate',
-            'artisan:horizon:terminate',
+            'artisan:queue:restart',
         ],
 
         // Deployment is done and live
