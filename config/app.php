@@ -16,11 +16,11 @@ return [
     'name' => env('APP_NAME', 'Laravel'),
 
     'admin' => [
-        'ips' => explode(',', env('ADMIN_IPS'))
+        'ips' => explode(',', (string) env('ADMIN_IPS', ''))
     ],
 
     'api' => [
-        'authlist' => explode(',', env('API_TOKEN_LIST')),
+        'authlist' => explode(',', (string) env('API_TOKEN_LIST', '')),
     ],
 
     'cli' => [
