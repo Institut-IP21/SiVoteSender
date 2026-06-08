@@ -14,6 +14,8 @@ use App\Models\Voter;
 
 class ExecuteElectionTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();

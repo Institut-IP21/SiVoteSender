@@ -22,12 +22,12 @@ class Verification extends Model
     protected $table = 'verifications';
 
     /**
-     * The attributes that should be mutated to dates.
+     * The attributes that should be cast.
      *
      * @var array
      */
-    protected $dates = [
-        'sent_at',
+    protected $casts = [
+        'sent_at' => 'datetime',
     ];
 
     /**

@@ -14,6 +14,7 @@ use App\Models\Voter;
 
 class VerificationTest extends TestCase
 {
+    use RefreshDatabase;
 
     protected function setUp(): void
     {

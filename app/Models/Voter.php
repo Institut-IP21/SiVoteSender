@@ -25,13 +25,13 @@ class Voter extends Model
     protected $cascadeDeletes = ['sentMessages'];
 
     /**
-     * The attributes that should be mutated to dates.
+     * The attributes that should be cast.
      *
      * @var array
      */
-    protected $dates = [
-        'email_verified',
-        'phone_verified',
+    protected $casts = [
+        'email_verified' => 'datetime',
+        'phone_verified' => 'datetime',
     ];
 
     /**
