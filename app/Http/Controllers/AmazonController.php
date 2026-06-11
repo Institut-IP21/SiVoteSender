@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\SentMessageFull;
 use App\Models\GlobalEmailBlockList;
 use App\Models\SentMessage;
+use App\Models\Voter;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -21,8 +22,9 @@ class AmazonController extends Controller
     const SUBTYPE_BOUNCE = 'Bounce';
     const SUBTYPE_COMPLAINT = 'Complaint';
 
-    public function post(Request $request)
+    public function post(Request $request): void
     {
+        /** @var object{Type: string, SubscribeURL: string, Message: string, notificationType: string}|null $data */
         $data = json_decode($request->getContent());
         // Log::debug('SNS Hook Called', [$request->getContent()]);
 
@@ -37,6 +39,7 @@ class AmazonController extends Controller
                 break;
 
             case self::TYPE_NOTIFICATION:
+                /** @var object{notificationType: string, mail: object{destination: list<string>}, bounce: object{bounceType: string, bounceSubType: string, bouncedRecipients: list<object{diagnosticCode: string}>}, complaint: object{timestamp: string, complaintFeedbackType: string}, delivery: object} $msg */
                 $msg = json_decode($data->Message);
 
                 switch ($msg->notificationType) {
@@ -53,7 +56,7 @@ class AmazonController extends Controller
                         break;
 
                     default:
-                        Log::alert('Received unknown SUBTYPE from SNS!', [$data->notificationType, $data->Message]);
+                        Log::alert('Received unknown SUBTYPE from SNS!', [$msg->notificationType, $data->Message]);
                         break;
                 }
 
@@ -69,7 +72,10 @@ class AmazonController extends Controller
     //
     //
 
-    private function _processDelivery(\stdClass $msg)
+    /**
+     * @param object{notificationType: string, mail: object{destination: list<string>}, bounce: object{bounceType: string, bounceSubType: string, bouncedRecipients: list<object{diagnosticCode: string}>}, complaint: object{timestamp: string, complaintFeedbackType: string}, delivery: object} $msg
+     */
+    private function _processDelivery(object $msg): void
     {
         $emails = $msg->mail->destination;
 
@@ -88,7 +94,10 @@ class AmazonController extends Controller
         return;
     }
 
-    private function _processBounce(\stdClass $msg)
+    /**
+     * @param object{notificationType: string, mail: object{destination: list<string>}, bounce: object{bounceType: string, bounceSubType: string, bouncedRecipients: list<object{diagnosticCode: string}>}, complaint: object{timestamp: string, complaintFeedbackType: string}, delivery: object} $msg
+     */
+    private function _processBounce(object $msg): void
     {
         $emails = $msg->mail->destination;
         $type   = $msg->bounce->bounceType; // Permenent / Transient
@@ -140,7 +149,10 @@ class AmazonController extends Controller
         }
     }
 
-    private function _processComplaint(\stdClass $msg)
+    /**
+     * @param object{notificationType: string, mail: object{destination: list<string>}, bounce: object{bounceType: string, bounceSubType: string, bouncedRecipients: list<object{diagnosticCode: string}>}, complaint: object{timestamp: string, complaintFeedbackType: string}, delivery: object} $msg
+     */
+    private function _processComplaint(object $msg): void
     {
         $time = $msg->complaint->timestamp;
         $emails = $msg->mail->destination;
@@ -169,7 +181,10 @@ class AmazonController extends Controller
         ]);
     }
 
-    private function _getSentMessage($email, ?array $statusList = null)
+    /**
+     * @param list<string>|null $statusList
+     */
+    private function _getSentMessage(string $email, ?array $statusList = null): SentMessage|false
     {
         if (!$statusList) {
             $statusList = [
@@ -180,6 +195,7 @@ class AmazonController extends Controller
 
         $sentMsg = SentMessage::where('type', SentMessage::TYPE_EMAIL)
             ->whereHas('voter', function (Builder $query) use ($email) {
+                /** @var Builder<Voter> $query */
                 $query->where('email', $email);
             })
             ->whereIn('status', $statusList)
@@ -200,7 +216,7 @@ class AmazonController extends Controller
      * @param string $url
      * @return void
      */
-    private function _processSubConfirmation(string $url)
+    private function _processSubConfirmation(string $url): void
     {
         $response = Http::get($url);
 

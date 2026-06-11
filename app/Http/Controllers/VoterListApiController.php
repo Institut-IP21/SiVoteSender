@@ -9,23 +9,25 @@ use App\Models\VoterList;
 use App\Models\Voter;
 use App\Services\Ballot;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Log;
 
 class VoterListApiController extends Controller
 {
 
-    public function show(VoterList $voterlist)
+    public function show(VoterList $voterlist): VoterListFull
     {
         return new VoterListFull($voterlist);
     }
 
-    public function showBasic(VoterList $voterlist)
+    public function showBasic(VoterList $voterlist): VoterListBasic
     {
         return new VoterListBasic($voterlist);
     }
 
-    public function list(Request $request)
+    public function list(Request $request): AnonymousResourceCollection|JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -61,7 +63,7 @@ class VoterListApiController extends Controller
         );
     }
 
-    public function listVoters(Request $request, VoterList $voterlist)
+    public function listVoters(Request $request, VoterList $voterlist): AnonymousResourceCollection|JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -95,13 +97,13 @@ class VoterListApiController extends Controller
         );
     }
 
-    public function delete(VoterList $voterlist)
+    public function delete(VoterList $voterlist): JsonResponse
     {
         $voterlist->delete();
         return $this->basicResponse(200);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): VoterListFull|JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -123,7 +125,7 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    public function update(Request $request, VoterList $voterlist)
+    public function update(Request $request, VoterList $voterlist): VoterListFull|JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -141,7 +143,7 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    public function addVoters(Request $request, VoterList $voterlist)
+    public function addVoters(Request $request, VoterList $voterlist): VoterListFull|JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -176,7 +178,7 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    public function removeVoters(Request $request, VoterList $voterlist)
+    public function removeVoters(Request $request, VoterList $voterlist): VoterListFull|JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -197,7 +199,7 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    public function sendInvites(Ballot $service, Request $request, VoterList $voterlist)
+    public function sendInvites(Ballot $service, Request $request, VoterList $voterlist): JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -251,7 +253,7 @@ class VoterListApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    public function sendSessionInvites(Ballot $service, Request $request, VoterList $voterlist)
+    public function sendSessionInvites(Ballot $service, Request $request, VoterList $voterlist): JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -299,7 +301,7 @@ class VoterListApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    public function sendResults(Ballot $service, Request $request, VoterList $voterlist)
+    public function sendResults(Ballot $service, Request $request, VoterList $voterlist): JsonResponse
     {
 
         $params = $request->all();
@@ -341,7 +343,7 @@ class VoterListApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    public function startTest(Ballot $service, Request $request)
+    public function startTest(Ballot $service, Request $request): JsonResponse
     {
         $params = $request->all();
         $settings = [

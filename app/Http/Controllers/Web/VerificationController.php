@@ -5,13 +5,15 @@ namespace App\Http\Controllers\Web;
 use App\Models\SentMessage;
 use App\Models\Verification;
 use App\Models\Voter;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 class VerificationController extends Controller
 {
 
-    public function verify(Request $request, Verification $verification, Voter $voter)
+    public function verify(Request $request, Verification $verification, Voter $voter): RedirectResponse|View
     {
         if (!$request->hasValidSignature()) {
             abort(401);
@@ -19,17 +21,21 @@ class VerificationController extends Controller
 
         $sentMessage = $voter->sentMessages()->where('verification_id', $verification->id)->first();
 
+        if (!$sentMessage) {
+            abort(404);
+        }
+
         switch ($sentMessage->type) {
             case SentMessage::TYPE_SMS:
                 $voter->phone_verified = now();
+                break;
 
             case SentMessage::TYPE_EMAIL:
                 $voter->email_verified = now();
                 break;
 
             default:
-                throw \Exception('Unknown message type!');
-                break;
+                throw new \Exception('Unknown message type!');
         }
 
         $voter->save();
@@ -41,7 +47,7 @@ class VerificationController extends Controller
         return view('verification.success');
     }
 
-    public function verifySingleEmail(Request $request, Voter $voter)
+    public function verifySingleEmail(Request $request, Voter $voter): View
     {
         if (!$request->hasValidSignature()) {
             abort(401);
@@ -54,7 +60,7 @@ class VerificationController extends Controller
         return view('verification.success');
     }
 
-    public function verifySinglePhone(Request $request, Voter $voter)
+    public function verifySinglePhone(Request $request, Voter $voter): View
     {
         if (!$request->hasValidSignature()) {
             abort(401);

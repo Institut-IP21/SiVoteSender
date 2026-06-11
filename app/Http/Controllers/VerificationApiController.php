@@ -10,17 +10,19 @@ use App\Models\Voter;
 use App\Services\Verification as ServicesVerification;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class VerificationApiController extends Controller
 {
 
-    public function show(Verification $verification)
+    public function show(Verification $verification): VerificationFull
     {
         return new VerificationFull($verification);
     }
 
-    public function list(Request $request)
+    public function list(Request $request): AnonymousResourceCollection|JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -45,6 +47,7 @@ class VerificationApiController extends Controller
         $query->whereHas(
             'voterlist',
             function (Builder $query) {
+                /** @var Builder<VoterList> $query */
                 $query->where('owner', $this->getOwner());
             }
         );
@@ -67,7 +70,7 @@ class VerificationApiController extends Controller
         );
     }
 
-    public function delete(Verification $verification)
+    public function delete(Verification $verification): JsonResponse
     {
         if (!empty($verification->sent_at)) {
             return $this->basicResponse(403, ['error' => 'The verification was already sent!']);
@@ -77,7 +80,7 @@ class VerificationApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): VerificationFull|JsonResponse
     {
 
         $params = $request->all();
@@ -96,6 +99,7 @@ class VerificationApiController extends Controller
             return $errors;
         }
 
+        /** @var VoterList $voterlist */
         $voterlist = VoterList::findOrFail($params['voterlist_id']);
         abort_if($this->checkOwner($voterlist->owner), 403);
 
@@ -112,7 +116,7 @@ class VerificationApiController extends Controller
         return new VerificationFull($verification);
     }
 
-    public function update(Request $request, Verification $verification)
+    public function update(Request $request, Verification $verification): VerificationFull|JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -145,7 +149,7 @@ class VerificationApiController extends Controller
         return new VerificationFull($verification);
     }
 
-    public function start(ServicesVerification $service, Verification $verification)
+    public function start(ServicesVerification $service, Verification $verification): JsonResponse
     {
         try {
             $status = $service->sendInvites($verification);
@@ -156,7 +160,7 @@ class VerificationApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    public function startSingle(Request $request, ServicesVerification $service, Voter $voter)
+    public function startSingle(Request $request, ServicesVerification $service, Voter $voter): JsonResponse
     {
         // $params = $request->all();
         // $settings = [
@@ -191,7 +195,7 @@ class VerificationApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    public function startTest(Request $request, ServicesVerification $service, Verification $verification)
+    public function startTest(Request $request, ServicesVerification $service, Verification $verification): JsonResponse
     {
         $params = $request->all();
         $settings = [

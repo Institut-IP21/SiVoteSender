@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\Models\ApiUser;
+use App\Models\Personalization;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -11,11 +13,10 @@ class BallotResult extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $template;
-    public $subject;
-    public $csv;
-    public $personalization;
-    public $resultLink;
+    public string $template;
+    public string $csv;
+    public ?Personalization $personalization;
+    public string $resultLink;
 
     /**
      * Create a new message instance.
@@ -28,7 +29,9 @@ class BallotResult extends Mailable
         $this->subject  = $subject;
         $this->csv  = $csv;
         $this->resultLink = $resultLink;
-        $this->personalization = Auth::user()->personalization;
+        /** @var ApiUser $user */
+        $user = Auth::user();
+        $this->personalization = $user->personalization;
     }
 
     /**
@@ -39,7 +42,7 @@ class BallotResult extends Mailable
     public function build()
     {
         return $this
-            ->subject($this->subject ?? __('emails.result.subject'))
+            ->subject($this->subject)
             ->markdown('emails.ballot-result')
             ->attachData($this->csv, 'results.csv', [
                 'mime' => 'text/csv',

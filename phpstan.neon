@@ -7,7 +7,7 @@ parameters:
         - app
 
     # The level 10 is the highest level
-    level: 5
+    level: 8
 
     excludePaths:
         # Framework scaffolding — no domain logic; excluded from the strict sweep.

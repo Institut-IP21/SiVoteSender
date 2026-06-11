@@ -12,7 +12,7 @@ use Log;
 class Verification
 {
 
-    protected $sender;
+    protected Sender $sender;
 
     public function __construct(Sender $sender)
     {
@@ -23,7 +23,9 @@ class Verification
     {
         $batch = (string) Str::uuid();
 
-        $voters = $verification->voterlist->voters;
+        /** @var \App\Models\VoterList $voterList */
+        $voterList = $verification->voterList;
+        $voters = $voterList->voters;
 
         Log::info(
             'Sending verification emails',
@@ -59,7 +61,7 @@ class Verification
         return true;
     }
 
-    public function sendInviteSingle(Voter $voter, $subject, $template): bool
+    public function sendInviteSingle(Voter $voter, string $subject, string $template): bool
     {
         $batch = (string) Str::uuid();
 
@@ -85,16 +87,21 @@ class Verification
 
         $email = new MailVerification(null, $url, $subject, $template);
 
+        /** @var \App\Models\VoterList $voterList */
+        $voterList = $voter->voterLists->first();
         $sentMessage = $this->sender->sendEmail(
             $voter,
             $email,
-            $voter->voterlists->first(),
+            $voterList,
             $batch
         );
 
         return true;
     }
 
+    /**
+     * @param array<int, string> $voters
+     */
     public function sendTestInvites(ModelsVerification $verification, array $voters): bool
     {
 
