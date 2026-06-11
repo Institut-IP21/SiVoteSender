@@ -44,5 +44,7 @@ class EvoteCache extends Command
         $this->call('view:cache');
 
         $this->info('Cache cleared and created successfully!');
+
+        return self::SUCCESS;
     }
 }

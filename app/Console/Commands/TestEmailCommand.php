@@ -47,12 +47,14 @@ class TestEmailCommand extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
         $email = $this->argument('email');
 
         $this->sender->checkAndSend($email, new TestMail());
 
         $this->info('Email sent');
+
+        return self::SUCCESS;
     }
 }

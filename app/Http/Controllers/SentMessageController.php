@@ -18,7 +18,7 @@ class SentMessageController extends Controller
     {
         $data = SentMessage::where('batch_uuid', $batchId)->get();
 
-        if (!$data or $data->count() < 1) {
+        if ($data->isEmpty()) {
             return $this->basicResponse(404, ['error' => 'No sent messages found for this batch']);
         }
 

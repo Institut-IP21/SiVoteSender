@@ -44,7 +44,7 @@ class VerificationApiController extends Controller
 
         $query->whereHas(
             'voterlist',
-            function (Builder $query) use ($owner) {
+            function (Builder $query) {
                 $query->where('owner', $this->getOwner());
             }
         );

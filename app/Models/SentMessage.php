@@ -75,11 +75,9 @@ class SentMessage extends Model
         switch ($this->type) {
             case self::TYPE_EMAIL:
                 return $this->voter->email;
-                break;
 
             case self::TYPE_SMS:
                 return $this->voter->phone;
-                break;
         }
     }
 

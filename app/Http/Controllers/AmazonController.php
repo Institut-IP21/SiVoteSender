@@ -137,7 +137,6 @@ class AmazonController extends Controller
             default:
                 Log::error('Unknown bounce type!', [json_encode($msg)]);
                 return;
-                break;
         }
     }
 
