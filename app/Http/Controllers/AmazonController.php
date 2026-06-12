@@ -218,6 +218,15 @@ class AmazonController extends Controller
      */
     private function _processSubConfirmation(string $url): void
     {
+        // SSRF guard: only ever fetch genuine AWS SNS confirmation URLs, never an
+        // attacker-supplied host smuggled in via the (untrusted) request body.
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        $host   = parse_url($url, PHP_URL_HOST);
+        if ($scheme !== 'https' || !is_string($host) || !preg_match('/^sns\.[a-z0-9-]+\.amazonaws\.com$/', $host)) {
+            Log::warning('Rejected SNS subscription confirmation URL (not an AWS SNS host)', [$url]);
+            return;
+        }
+
         $response = Http::get($url);
 
         if (!$response->ok()) {

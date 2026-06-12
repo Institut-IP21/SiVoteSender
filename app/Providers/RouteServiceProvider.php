@@ -38,6 +38,13 @@ class RouteServiceProvider extends ServiceProvider
         $this->configureRateLimiting();
 
         $this->routes(function () {
+            // AWS SNS webhook: authenticated by SNS signature (sns.verify), not the
+            // app token group, because AWS cannot send the Authorization/Owner headers.
+            Route::prefix('api')
+                ->middleware(['throttle:sns', 'sns.verify'])
+                ->namespace($this->namespace)
+                ->group(base_path('routes/sns.php'));
+
             Route::prefix('api')
                 ->middleware('api')
                 ->namespace($this->namespace)
@@ -58,6 +65,14 @@ class RouteServiceProvider extends ServiceProvider
     {
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
+        });
+
+        // AWS SNS bounce/complaint webhook. Requests are signature-verified, so this
+        // limiter only guards against forged-message floods; kept generous so a burst
+        // of genuine delivery notifications during a large send isn't throttled (429
+        // would otherwise trigger SNS retries/backoff and stale email-block state).
+        RateLimiter::for('sns', function (Request $request) {
+            return Limit::perMinute(300)->by($request->ip());
         });
     }
 }

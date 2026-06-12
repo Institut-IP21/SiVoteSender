@@ -20,7 +20,8 @@ class SentMessagePolicy
      */
     public function view(User $user, SentMessage $sentMessage): Response|bool
     {
-        return $user->owner === $sentMessage->voterList->owner
+        $listOwner = $sentMessage->voterList()->value('owner');
+        return $listOwner !== null && $user->owner === $listOwner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -34,7 +35,8 @@ class SentMessagePolicy
      */
     public function update(User $user, SentMessage $sentMessage): Response|bool
     {
-        return $user->owner === $sentMessage->voterList->owner
+        $listOwner = $sentMessage->voterList()->value('owner');
+        return $listOwner !== null && $user->owner === $listOwner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -48,7 +50,8 @@ class SentMessagePolicy
      */
     public function delete(User $user, SentMessage $sentMessage): Response|bool
     {
-        return $user->owner === $sentMessage->voterList->owner
+        $listOwner = $sentMessage->voterList()->value('owner');
+        return $listOwner !== null && $user->owner === $listOwner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
