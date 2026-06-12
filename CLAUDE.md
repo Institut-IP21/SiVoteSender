@@ -4,32 +4,32 @@ Manages **lists of voters, voter verification, and sending ballot-invitation ema
 
 ## Stack
 
-- **Laravel 9** (target: **12** — see superproject CLAUDE.md), PHP `^8.0` (dev image: 8.4)
+- **Laravel 12**, PHP `^8.2` (dev image: 8.4)
 - Laravel **Horizon** 5.4 (Redis queues, via `predis`)
-- Dev: PHPUnit 9, Paratest 6, Collision 6, `spatie/laravel-ignition` 1
-- `fruitcake/laravel-cors` 2 (removable — CORS is built into the framework)
-- `minimum-stability: dev` (tighten to `stable` during upgrade)
+- CORS is the framework's native `config/cors.php` (the old `fruitcake/laravel-cors` is gone).
+- Dev: PHPUnit **11**, Paratest **7**, Collision **8**, `spatie/laravel-ignition` **2**, `larastan/larastan` **3** (phpstan 2)
+- `minimum-stability: stable`
 
-## Testing
+## Testing & static analysis
 
 ```bash
-php artisan test          # Unit + Feature suites
-./vendor/bin/phpunit
-./vendor/bin/paratest     # parallel
+php artisan test                                          # Unit + Feature suites
+./vendor/bin/paratest                                     # parallel
+php -d memory_limit=1024M vendor/bin/phpstan analyse --no-progress
 ```
+
+PHPStan is at **level 8**, clean (no baseline). `phpstan.neon` uses `checkModelProperties`; framework scaffolding is excluded. After big edits, `vendor/bin/phpstan clear-result-cache`.
 
 ## Domain CLI (custom artisan commands)
 
-`evote:cache`, and `TestEmailCommand` (sender email smoke test) — see `app/Console/Commands`.
+`evote:cache`, and `TestEmailCommand` (sender email smoke test) — see `app/Console/Commands`. Mail is caught locally by **Mailhog** (UI http://localhost:8025).
 
-## ⚠️ Stashed upgrade WIP
+## Notes / gotchas
 
-A **partial Laravel 9 → 10 upgrade** is parked in `stash@{0}` (composer.json/lock bumped to L10, plus edits to `VerificationApiController`, `Http/Kernel`, `Verification`/`Voter` models, the `Verification` service, feature tests, and a `phpunit.xml` migration). Inspect with `git stash show -u stash@{0}`; apply with `git stash apply stash@{0}` to use it as the 9→10 stepping stone. `stash@{1}` is unrelated 2021 cruft.
+Bugs fixed during the upgrade (surfaced by phpstan / review) — be aware these were real defects, not cosmetic:
 
-## Upgrade watch-list (9 → 12)
+- `VerificationController` had a `switch` fall-through that let cases bleed into one another.
+- `SentMessage::scopeEmailOnly()` was filtering on `TYPE_SMS` instead of `TYPE_EMAIL` — i.e. the "email only" scope returned SMS.
+- `config/auth.php` provider model corrected to `ApiUser`.
 
-- Apply/reconcile the stashed 9→10 work first, then continue 10 → 11 → 12.
-- **Horizon** major bumps track Laravel majors (5 → 5.x/6) — verify Redis/queue config each step.
-- Remove `fruitcake/laravel-cors`; use `config/cors.php`.
-- Collision 6 → 7/8, PHPUnit 9 → 10/11, Paratest 6 → 7, Ignition 1 → 2.
-- `minimum-stability` → `stable`.
+The old partial **9→10 stash** and any `feature/laravel-upgrade-12` stub branch are **superseded** by the completed work — ignore them. Upgrade work lives on `upgrade/laravel-12` (draft PR **SiVoteSender#4** → `master`).
