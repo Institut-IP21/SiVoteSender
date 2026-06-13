@@ -177,7 +177,9 @@ class VerificationApiController extends Controller
         $params = [
             'subject' => __('verification.email_subject_template'),
             'template' => __('verification.email_body_template', [
-                'org' => $voter->voterLists->first()->title ?? ''
+                // Null-safe: a voter with no list must not fatal here (the `?? ''`
+                // alone wouldn't help — reading ->title on null throws first).
+                'org' => $voter->voterLists()->first()?->title ?? ''
                 ]
             )
         ];
