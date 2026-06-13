@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "aws/aws-php-sns-message-validator": "^1.10",
         "brianium/paratest": "^7.0",
         "deployer/deployer": "^7.3.1",
