@@ -57,7 +57,7 @@ class VerificationTest extends TestCase
         return $response->json()['data']['id'];
     }
 
-    public function testMissingAuth()
+    public function testMissingAuth(): void
     {
         $response = $this
             ->withHeaders(
@@ -72,7 +72,7 @@ class VerificationTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    public function testMissingOwner()
+    public function testMissingOwner(): void
     {
         $response = $this
             ->withHeaders(
@@ -91,7 +91,7 @@ class VerificationTest extends TestCase
     //
     //
 
-    public function testCreateVerification()
+    public function testCreateVerification(): void
     {
         $voterlistId = $this->createVoterList();
 
@@ -119,7 +119,7 @@ class VerificationTest extends TestCase
         $response->assertJsonFragment(['redirect_url' => null]);
     }
 
-    public function testUpdateVerification()
+    public function testUpdateVerification(): void
     {
         $voterlistId = $this->createVoterList();
         $verificationId = $this->createVerification($voterlistId);
@@ -148,7 +148,7 @@ class VerificationTest extends TestCase
         $response->assertJsonFragment(['redirect_url' => null]);
     }
 
-    public function testTestStartVerification()
+    public function testTestStartVerification(): void
     {
         $voterlistId = $this->createVoterList();
         $verificationId = $this->createVerification($voterlistId);
@@ -180,23 +180,19 @@ class VerificationTest extends TestCase
 
         Mail::assertQueued(
             MailVerification::class,
-            function ($mail) {
-                return $mail->hasTo('admin1@example.org')
-                    || $mail->hasTo('admin2@example.org');
-            }
+            fn($mail) => $mail->hasTo('admin1@example.org')
+                || $mail->hasTo('admin2@example.org')
         );
 
         Mail::assertQueued(
             MailVerification::class,
-            function ($mail) {
-                return $mail->subject == 'Subject'
-                    && $mail->template == 'Template';
-            }
+            fn($mail) => $mail->subject == 'Subject'
+                && $mail->template == 'Template'
         );
     }
 
 
-    public function testRealStartVerification()
+    public function testRealStartVerification(): void
     {
 
         $voterlist = VoterList::factory()
@@ -234,7 +230,7 @@ class VerificationTest extends TestCase
         $email = null;
         Mail::assertQueued(
             MailVerification::class,
-            function ($mail) use (&$link, &$email) {
+            function ($mail) use (&$link, &$email): bool {
                 $link = $mail->url;
                 $email = $mail->to[0]['address'];
                 return (bool) $mail->url;
@@ -247,7 +243,7 @@ class VerificationTest extends TestCase
         $this->assertNotNull($voter->email_verified);
     }
 
-    public function testRealStartVerificationWithBlockedVoters()
+    public function testRealStartVerificationWithBlockedVoters(): void
     {
 
         $voterlist = VoterList::factory()
@@ -289,7 +285,7 @@ class VerificationTest extends TestCase
         Mail::assertQueued(MailVerification::class, 4);
     }
 
-    public function testRealStartForSingleVoterVerification()
+    public function testRealStartForSingleVoterVerification(): void
     {
 
         $voterlist = VoterList::factory()
@@ -322,7 +318,7 @@ class VerificationTest extends TestCase
         $link = null;
         Mail::assertQueued(
             MailVerification::class,
-            function ($mail) use (&$link, &$email) {
+            function ($mail) use (&$link, &$email): bool {
                 $link = $mail->url;
                 return (bool) $mail->url;
             }

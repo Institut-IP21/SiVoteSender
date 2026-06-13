@@ -12,7 +12,7 @@ class VoterListVoters extends Command
 
     protected $description = 'List voters in a voter list';
 
-    public function handle()
+    public function handle(): int
     {
         $voterListId = $this->option('voterlist');
 
@@ -22,9 +22,7 @@ class VoterListVoters extends Command
                 $this->error('No voter lists found.');
                 return 1;
             }
-            $choices = $voterLists->mapWithKeys(function ($vl) {
-                return [$vl->id => "{$vl->id} - {$vl->title}"];
-            })->toArray();
+            $choices = $voterLists->mapWithKeys(fn($vl) => [$vl->id => "{$vl->id} - {$vl->title}"])->toArray();
             $selected = $this->choice('Select a voter list', $choices);
             $voterListId = array_search($selected, $choices);
         }
@@ -43,15 +41,13 @@ class VoterListVoters extends Command
             return 0;
         }
 
-        $rows = $voters->map(function ($voter) {
-            return [
-                $voter->id,
-                $voter->title,
-                $voter->email,
-                $voter->phone,
-                $voter->email_verified ? 'Yes' : 'No',
-            ];
-        });
+        $rows = $voters->map(fn($voter) => [
+            $voter->id,
+            $voter->title,
+            $voter->email,
+            $voter->phone,
+            $voter->email_verified ? 'Yes' : 'No',
+        ]);
 
         $this->table(['ID', 'Name', 'Email', 'Phone', 'Email Verified'], $rows);
 

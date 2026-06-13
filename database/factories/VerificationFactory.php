@@ -34,10 +34,8 @@ class VerificationFactory extends Factory
 
     public function hasVoters($count)
     {
-        return $this->state(function (array $attributes) use ($count) {
-            return [
-                'sent_at' => $this->faker->datetime,
-            ];
-        });
+        return $this->state(fn(array $attributes) => [
+            'sent_at' => $this->faker->datetime,
+        ]);
     }
 }

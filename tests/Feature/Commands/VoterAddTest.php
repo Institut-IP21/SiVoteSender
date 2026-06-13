@@ -11,7 +11,7 @@ class VoterAddTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testAddSingleVoter()
+    public function testAddSingleVoter(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'My List']);
 
@@ -33,7 +33,7 @@ class VoterAddTest extends TestCase
         $this->assertEquals(1, $voterList->voters()->count());
     }
 
-    public function testAddFromCsv()
+    public function testAddFromCsv(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'CSV List']);
 
@@ -56,7 +56,7 @@ class VoterAddTest extends TestCase
         unlink($csvPath);
     }
 
-    public function testAddToInvalidList()
+    public function testAddToInvalidList(): void
     {
         $this->artisan('evote:add:voter', [
             '--voterlist' => 999,
@@ -67,7 +67,7 @@ class VoterAddTest extends TestCase
             ->assertExitCode(1);
     }
 
-    public function testAddCsvFileNotFound()
+    public function testAddCsvFileNotFound(): void
     {
         $voterList = VoterList::factory()->create();
 

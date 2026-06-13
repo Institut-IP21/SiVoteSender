@@ -10,7 +10,7 @@ class VoterListDeleteTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testDeleteSuccess()
+    public function testDeleteSuccess(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'To Delete']);
 
@@ -22,7 +22,7 @@ class VoterListDeleteTest extends TestCase
         $this->assertSoftDeleted('voterlists', ['id' => $voterList->id]);
     }
 
-    public function testDeleteRequiresConfirmation()
+    public function testDeleteRequiresConfirmation(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'Keep Me']);
 
@@ -37,7 +37,7 @@ class VoterListDeleteTest extends TestCase
         ]);
     }
 
-    public function testDeleteNotFound()
+    public function testDeleteNotFound(): void
     {
         $this->artisan('evote:delete:voterlist', ['--voterlist' => 999])
             ->expectsOutput('Voter list with ID 999 not found.')

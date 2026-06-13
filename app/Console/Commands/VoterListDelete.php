@@ -12,7 +12,7 @@ class VoterListDelete extends Command
 
     protected $description = 'Delete a voter list';
 
-    public function handle()
+    public function handle(): int
     {
         $voterListId = $this->option('voterlist');
 
@@ -22,9 +22,7 @@ class VoterListDelete extends Command
                 $this->error('No voter lists found.');
                 return 1;
             }
-            $choices = $voterLists->mapWithKeys(function ($vl) {
-                return [$vl->id => "{$vl->id} - {$vl->title}"];
-            })->toArray();
+            $choices = $voterLists->mapWithKeys(fn($vl) => [$vl->id => "{$vl->id} - {$vl->title}"])->toArray();
             $selected = $this->choice('Select a voter list', $choices);
             $voterListId = array_search($selected, $choices);
         }

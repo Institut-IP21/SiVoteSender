@@ -10,14 +10,14 @@ class VoterListListTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testEmptyList()
+    public function testEmptyList(): void
     {
         $this->artisan('evote:list:voterlist')
             ->expectsOutput('No voter lists found.')
             ->assertExitCode(0);
     }
 
-    public function testListWithEntries()
+    public function testListWithEntries(): void
     {
         VoterList::factory()->create(['title' => 'List A']);
         VoterList::factory()->create(['title' => 'List B']);
@@ -30,7 +30,7 @@ class VoterListListTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testFilterByOwner()
+    public function testFilterByOwner(): void
     {
         VoterList::factory()->create(['title' => 'Owner A List', 'owner' => 'owner-a']);
         VoterList::factory()->create(['title' => 'Owner B List', 'owner' => 'owner-b']);

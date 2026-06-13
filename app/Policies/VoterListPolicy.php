@@ -15,7 +15,7 @@ class VoterListPolicy
      * Determine whether the user can view any models.
      *
      * @param  \App\Models\ApiUser  $user
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @return Response|bool
      */
     public function viewAny(User $user): Response|bool
     {
@@ -26,8 +26,8 @@ class VoterListPolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\VoterList  $voterlist
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param VoterList $voterlist
+     * @return Response|bool
      */
     public function view(User $user, VoterList $voterlist): Response|bool
     {
@@ -40,7 +40,7 @@ class VoterListPolicy
      * Determine whether the user can create models.
      *
      * @param  \App\Models\ApiUser  $user
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @return Response|bool
      */
     public function create(User $user): Response|bool
     {
@@ -51,8 +51,8 @@ class VoterListPolicy
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\VoterList  $voterlist
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param VoterList $voterlist
+     * @return Response|bool
      */
     public function update(User $user, VoterList $voterlist): Response|bool
     {
@@ -65,8 +65,8 @@ class VoterListPolicy
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\VoterList  $voterlist
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param VoterList $voterlist
+     * @return Response|bool
      */
     public function delete(User $user, VoterList $voterlist): Response|bool
     {

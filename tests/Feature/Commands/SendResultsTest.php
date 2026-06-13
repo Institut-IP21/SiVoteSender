@@ -13,7 +13,7 @@ class SendResultsTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testSendResultsSuccess()
+    public function testSendResultsSuccess(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'Results List']);
         $voter = Voter::factory()->create();
@@ -31,7 +31,7 @@ class SendResultsTest extends TestCase
         $mock->shouldReceive('sendResults')
             ->once()
             ->with(
-                Mockery::on(fn ($vl) => $vl->id === $voterList->id),
+                Mockery::on(fn ($vl): bool => $vl->id === $voterList->id),
                 $batchUuid,
                 '<p>Here are the results</p>',
                 'Election Results',
@@ -57,14 +57,14 @@ class SendResultsTest extends TestCase
         unlink($csvPath);
     }
 
-    public function testSendResultsMissingVoterList()
+    public function testSendResultsMissingVoterList(): void
     {
         $this->artisan('evote:send:results')
             ->expectsOutput('Voter list ID is required. Provide --voterlist.')
             ->assertExitCode(1);
     }
 
-    public function testSendResultsMissingTemplate()
+    public function testSendResultsMissingTemplate(): void
     {
         $voterList = VoterList::factory()->create();
 

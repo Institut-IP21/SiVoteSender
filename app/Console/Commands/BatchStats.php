@@ -12,7 +12,7 @@ class BatchStats extends Command
 
     protected $description = 'Show statistics for a message batch';
 
-    public function handle()
+    public function handle(): int
     {
         $batchUuid = $this->option('batch');
 

@@ -31,16 +31,13 @@ class TestEmailCommand extends Command
      */
     protected $description = 'Command description';
 
-    protected Sender $sender;
-
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct(Sender $sender)
+    public function __construct(protected Sender $sender)
     {
-        $this->sender = $sender;
         parent::__construct();
     }
 

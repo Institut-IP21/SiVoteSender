@@ -15,8 +15,8 @@ class VoterPolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\Voter  $voter
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param Voter $voter
+     * @return Response|bool
      */
     public function view(User $user, Voter $voter): Response|bool
     {
@@ -29,8 +29,8 @@ class VoterPolicy
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\Voter  $voter
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param Voter $voter
+     * @return Response|bool
      */
     public function update(User $user, Voter $voter): Response|bool
     {
@@ -43,8 +43,8 @@ class VoterPolicy
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\Voter  $voter
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param Voter $voter
+     * @return Response|bool
      */
     public function delete(User $user, Voter $voter): Response|bool
     {

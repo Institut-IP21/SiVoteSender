@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection;
+use Database\Factories\VerificationFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,16 +18,34 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $template
  * @property string|null $subject
  * @property string|null $redirect_url
- * @property \Illuminate\Support\Carbon|null $sent_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $sent_at
+ * @property Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read VoterList $voterList
- * @property-read \Illuminate\Database\Eloquent\Collection<int, SentMessage> $sentMessages
+ * @property-read Collection<int, SentMessage> $sentMessages
+ * @property-read int|null $sent_messages_count
+ * @method static VerificationFactory factory($count = null, $state = [])
+ * @method static Builder<static>|Verification newModelQuery()
+ * @method static Builder<static>|Verification newQuery()
+ * @method static Builder<static>|Verification onlyTrashed()
+ * @method static Builder<static>|Verification query()
+ * @method static Builder<static>|Verification whereCreatedAt($value)
+ * @method static Builder<static>|Verification whereDeletedAt($value)
+ * @method static Builder<static>|Verification whereId($value)
+ * @method static Builder<static>|Verification whereRedirectUrl($value)
+ * @method static Builder<static>|Verification whereSentAt($value)
+ * @method static Builder<static>|Verification whereSubject($value)
+ * @method static Builder<static>|Verification whereTemplate($value)
+ * @method static Builder<static>|Verification whereUpdatedAt($value)
+ * @method static Builder<static>|Verification whereVoterlistId($value)
+ * @method static Builder<static>|Verification withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Verification withoutTrashed()
+ * @mixin \Eloquent
  */
 class Verification extends Model
 {
-    /** @use HasFactory<\Database\Factories\VerificationFactory> */
+    /** @use HasFactory<VerificationFactory> */
     use HasFactory;
     use SoftDeletes;
 

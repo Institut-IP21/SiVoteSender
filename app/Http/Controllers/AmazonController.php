@@ -42,23 +42,12 @@ class AmazonController extends Controller
                 /** @var object{notificationType: string, mail: object{destination: list<string>}, bounce: object{bounceType: string, bounceSubType: string, bouncedRecipients: list<object{diagnosticCode: string}>}, complaint: object{timestamp: string, complaintFeedbackType: string}, delivery: object} $msg */
                 $msg = json_decode($data->Message);
 
-                switch ($msg->notificationType) {
-                    case self::SUBTYPE_DELIVERY:
-                        $this->_processDelivery($msg);
-                        break;
-
-                    case self::SUBTYPE_BOUNCE:
-                        $this->_processBounce($msg);
-                        break;
-
-                    case self::SUBTYPE_COMPLAINT:
-                        $this->_processComplaint($msg);
-                        break;
-
-                    default:
-                        Log::alert('Received unknown SUBTYPE from SNS!', [$msg->notificationType, $data->Message]);
-                        break;
-                }
+                match ($msg->notificationType) {
+                    self::SUBTYPE_DELIVERY => $this->_processDelivery($msg),
+                    self::SUBTYPE_BOUNCE => $this->_processBounce($msg),
+                    self::SUBTYPE_COMPLAINT => $this->_processComplaint($msg),
+                    default => Log::alert('Received unknown SUBTYPE from SNS!', [$msg->notificationType, $data->Message]),
+                };
 
                 break;
 
@@ -194,7 +183,7 @@ class AmazonController extends Controller
         }
 
         $sentMsg = SentMessage::where('type', SentMessage::TYPE_EMAIL)
-            ->whereHas('voter', function (Builder $query) use ($email) {
+            ->whereHas('voter', function (Builder $query) use ($email): void {
                 /** @var Builder<Voter> $query */
                 $query->where('email', $email);
             })

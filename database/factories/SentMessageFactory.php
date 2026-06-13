@@ -35,20 +35,16 @@ class SentMessageFactory extends Factory
 
     public function notSuccessful()
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'successful' => false,
-                'status'     => "Could not deliver message.",
-            ];
-        });
+        return $this->state(fn(array $attributes) => [
+            'successful' => false,
+            'status'     => "Could not deliver message.",
+        ]);
     }
 
     public function typePhone()
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'type' => SentMessage::TYPE_SMS,
-            ];
-        });
+        return $this->state(fn(array $attributes) => [
+            'type' => SentMessage::TYPE_SMS,
+        ]);
     }
 }

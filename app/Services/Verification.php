@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\VoterList;
 use App\Mail\Verification as MailVerification;
 use App\Models\Verification as ModelsVerification;
 use App\Models\Voter;
@@ -12,18 +13,15 @@ use Log;
 class Verification
 {
 
-    protected Sender $sender;
-
-    public function __construct(Sender $sender)
+    public function __construct(protected Sender $sender)
     {
-        $this->sender = $sender;
     }
 
     public function sendInvites(ModelsVerification $verification): bool
     {
         $batch = (string) Str::uuid();
 
-        /** @var \App\Models\VoterList $voterList */
+        /** @var VoterList $voterList */
         $voterList = $verification->voterList;
         $voters = $voterList->voters;
 
@@ -87,7 +85,7 @@ class Verification
 
         $email = new MailVerification(null, $url, $subject, $template);
 
-        /** @var \App\Models\VoterList $voterList */
+        /** @var VoterList $voterList */
         $voterList = $voter->voterLists->first();
         $sentMessage = $this->sender->sendEmail(
             $voter,

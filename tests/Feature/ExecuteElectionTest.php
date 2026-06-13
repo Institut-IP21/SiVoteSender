@@ -22,7 +22,7 @@ class ExecuteElectionTest extends TestCase
         $this->owner = 'a2c88f6a-f437-4080-80f0-fe40f596c050';
     }
 
-    public function testStartElection()
+    public function testStartElection(): void
     {
 
         $voterlist = VoterList::factory()
@@ -64,7 +64,7 @@ class ExecuteElectionTest extends TestCase
         Mail::assertQueued(BallotInvite::class, 4);
     }
 
-    public function testInviteEmailUsesProvidedLocale()
+    public function testInviteEmailUsesProvidedLocale(): void
     {
         $voterlist = VoterList::factory()
             ->has(Voter::factory()->count(2))
@@ -88,12 +88,10 @@ class ExecuteElectionTest extends TestCase
 
         $response->assertSuccessful();
 
-        Mail::assertQueued(BallotInvite::class, function (BallotInvite $mail) {
-            return $mail->locale === 'sl';
-        });
+        Mail::assertQueued(BallotInvite::class, fn(BallotInvite $mail) => $mail->locale === 'sl');
     }
 
-    public function testInviteEmailWithoutLocaleLeavesItUnset()
+    public function testInviteEmailWithoutLocaleLeavesItUnset(): void
     {
         $voterlist = VoterList::factory()
             ->has(Voter::factory()->count(2))
@@ -116,12 +114,10 @@ class ExecuteElectionTest extends TestCase
 
         $response->assertSuccessful();
 
-        Mail::assertQueued(BallotInvite::class, function (BallotInvite $mail) {
-            return $mail->locale === null;
-        });
+        Mail::assertQueued(BallotInvite::class, fn(BallotInvite $mail) => $mail->locale === null);
     }
 
-    public function testStartElectionWithBlockedEmail()
+    public function testStartElectionWithBlockedEmail(): void
     {
 
         $voterlist = VoterList::factory()

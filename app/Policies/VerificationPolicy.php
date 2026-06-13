@@ -25,8 +25,8 @@ class VerificationPolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\Verification  $verification
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param Verification $verification
+     * @return Response|bool
      */
     public function view(User $user, Verification $verification): Response|bool
     {
@@ -39,8 +39,8 @@ class VerificationPolicy
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\Verification  $verification
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param Verification $verification
+     * @return Response|bool
      */
     public function update(User $user, Verification $verification): Response|bool
     {
@@ -53,8 +53,8 @@ class VerificationPolicy
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\Verification  $verification
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param Verification $verification
+     * @return Response|bool
      */
     public function delete(User $user, Verification $verification): Response|bool
     {

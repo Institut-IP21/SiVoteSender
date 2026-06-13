@@ -13,7 +13,7 @@ class VoterListCreate extends Command
 
     protected $description = 'Create a new voter list';
 
-    public function handle()
+    public function handle(): int
     {
         $title = $this->option('title') ?? $this->ask('Enter voter list title');
         $owner = $this->option('owner') ?? config('app.cli.default_owner');

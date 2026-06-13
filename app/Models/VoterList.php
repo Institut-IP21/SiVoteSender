@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection;
+use Database\Factories\VoterListFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,16 +17,34 @@ use Dyrynda\Database\Support\CascadeSoftDeletes;
  * @property int $id
  * @property string $owner
  * @property string $title
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Voter> $voters
- * @property-read \Illuminate\Database\Eloquent\Collection<int, SentMessage> $sentMessages
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Verification> $verifications
+ * @property Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Voter> $voters
+ * @property-read Collection<int, SentMessage> $sentMessages
+ * @property-read Collection<int, Verification> $verifications
+ * @property-read int|null $sent_messages_count
+ * @property-read int|null $verifications_count
+ * @property-read int|null $voters_count
+ * @method static VoterListFactory factory($count = null, $state = [])
+ * @method static Builder<static>|VoterList newModelQuery()
+ * @method static Builder<static>|VoterList newQuery()
+ * @method static Builder<static>|VoterList onlyTrashed()
+ * @method static Builder<static>|VoterList owner(?mixed $id)
+ * @method static Builder<static>|VoterList query()
+ * @method static Builder<static>|VoterList whereCreatedAt($value)
+ * @method static Builder<static>|VoterList whereDeletedAt($value)
+ * @method static Builder<static>|VoterList whereId($value)
+ * @method static Builder<static>|VoterList whereOwner($value)
+ * @method static Builder<static>|VoterList whereTitle($value)
+ * @method static Builder<static>|VoterList whereUpdatedAt($value)
+ * @method static Builder<static>|VoterList withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|VoterList withoutTrashed()
+ * @mixin \Eloquent
  */
 class VoterList extends Model
 {
-    /** @use HasFactory<\Database\Factories\VoterListFactory> */
+    /** @use HasFactory<VoterListFactory> */
     use HasFactory;
     use SoftDeletes;
     use CascadeSoftDeletes;

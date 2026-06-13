@@ -16,7 +16,7 @@ class FakeDataSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $voterlist = VoterList::factory()
             ->times(1)

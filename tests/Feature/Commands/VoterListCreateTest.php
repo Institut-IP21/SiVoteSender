@@ -10,7 +10,7 @@ class VoterListCreateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testCreateWithOptions()
+    public function testCreateWithOptions(): void
     {
         $this->artisan('evote:make:voterlist', [
             '--title' => 'Test List',
@@ -25,7 +25,7 @@ class VoterListCreateTest extends TestCase
         ]);
     }
 
-    public function testCreateWithDefaultOwner()
+    public function testCreateWithDefaultOwner(): void
     {
         config(['app.cli.default_owner' => 'default-owner-uuid']);
 
@@ -40,7 +40,7 @@ class VoterListCreateTest extends TestCase
         ]);
     }
 
-    public function testCreateInteractivePrompt()
+    public function testCreateInteractivePrompt(): void
     {
         config(['app.cli.default_owner' => 'default-owner-uuid']);
 
@@ -54,7 +54,7 @@ class VoterListCreateTest extends TestCase
         ]);
     }
 
-    public function testCreateFailsWithoutOwner()
+    public function testCreateFailsWithoutOwner(): void
     {
         config(['app.cli.default_owner' => null]);
 

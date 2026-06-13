@@ -12,7 +12,7 @@ class VerificationList extends Command
 
     protected $description = 'List verifications';
 
-    public function handle()
+    public function handle(): int
     {
         $query = Verification::query();
 
@@ -27,14 +27,12 @@ class VerificationList extends Command
             return 0;
         }
 
-        $rows = $verifications->map(function ($verification) {
-            return [
-                $verification->id,
-                $verification->voterlist_id,
-                $verification->subject,
-                $verification->sent_at,
-            ];
-        });
+        $rows = $verifications->map(fn($verification) => [
+            $verification->id,
+            $verification->voterlist_id,
+            $verification->subject,
+            $verification->sent_at,
+        ]);
 
         $this->table(['ID', 'Voter List ID', 'Subject', 'Sent At'], $rows);
 

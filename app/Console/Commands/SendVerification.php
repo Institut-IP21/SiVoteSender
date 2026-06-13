@@ -13,7 +13,7 @@ class SendVerification extends Command
 
     protected $description = 'Send verification emails to voters';
 
-    public function handle(VerificationService $verificationService)
+    public function handle(VerificationService $verificationService): int
     {
         $verificationId = $this->option('verification');
 
@@ -23,9 +23,7 @@ class SendVerification extends Command
                 $this->error('No unsent verifications found.');
                 return 1;
             }
-            $choices = $verifications->mapWithKeys(function ($v) {
-                return [$v->id => "{$v->id} - {$v->subject}"];
-            })->toArray();
+            $choices = $verifications->mapWithKeys(fn($v) => [$v->id => "{$v->id} - {$v->subject}"])->toArray();
             $selected = $this->choice('Select a verification', $choices);
             $verificationId = array_search($selected, $choices);
         }

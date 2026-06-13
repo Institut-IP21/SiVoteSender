@@ -10,11 +10,8 @@ use Illuminate\Support\Facades\Log;
 
 class Ballot
 {
-    protected Sender $sender;
-
-    public function __construct(Sender $sender)
+    public function __construct(protected Sender $sender)
     {
-        $this->sender = $sender;
     }
 
     /**

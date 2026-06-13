@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Carbon;
+use Database\Factories\SentMessageFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,17 +20,40 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $successful
  * @property string $status
  * @property string|null $status_msg
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Voter $voter
  * @property-read VoterList $voterList
  * @property-read Verification|null $verification
  * @property-read string|null $contact
+ * @method static Builder<static>|SentMessage batch(?mixed $batch)
+ * @method static Builder<static>|SentMessage emailOnly()
+ * @method static SentMessageFactory factory($count = null, $state = [])
+ * @method static Builder<static>|SentMessage newModelQuery()
+ * @method static Builder<static>|SentMessage newQuery()
+ * @method static Builder<static>|SentMessage onlyTrashed()
+ * @method static Builder<static>|SentMessage phoneOnly()
+ * @method static Builder<static>|SentMessage query()
+ * @method static Builder<static>|SentMessage whereBatchUuid($value)
+ * @method static Builder<static>|SentMessage whereCreatedAt($value)
+ * @method static Builder<static>|SentMessage whereDeletedAt($value)
+ * @method static Builder<static>|SentMessage whereId($value)
+ * @method static Builder<static>|SentMessage whereStatus($value)
+ * @method static Builder<static>|SentMessage whereStatusMsg($value)
+ * @method static Builder<static>|SentMessage whereSuccessful($value)
+ * @method static Builder<static>|SentMessage whereType($value)
+ * @method static Builder<static>|SentMessage whereUpdatedAt($value)
+ * @method static Builder<static>|SentMessage whereVerificationId($value)
+ * @method static Builder<static>|SentMessage whereVoterId($value)
+ * @method static Builder<static>|SentMessage whereVoterlistId($value)
+ * @method static Builder<static>|SentMessage withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|SentMessage withoutTrashed()
+ * @mixin \Eloquent
  */
 class SentMessage extends Model
 {
-    /** @use HasFactory<\Database\Factories\SentMessageFactory> */
+    /** @use HasFactory<SentMessageFactory> */
     use HasFactory;
     use SoftDeletes;
 
@@ -90,15 +115,11 @@ class SentMessage extends Model
 
     public function getContactAttribute(): ?string
     {
-        switch ($this->type) {
-            case self::TYPE_EMAIL:
-                return $this->voter->email;
-
-            case self::TYPE_SMS:
-                return $this->voter->phone;
-        }
-
-        return null;
+        return match ($this->type) {
+            self::TYPE_EMAIL => $this->voter->email,
+            self::TYPE_SMS => $this->voter->phone,
+            default => null,
+        };
     }
 
     /** @return BelongsTo<Voter, $this> */

@@ -12,23 +12,16 @@ use Illuminate\Support\Facades\Auth;
 class BallotResult extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public string $template;
-    public string $csv;
     public ?Personalization $personalization;
-    public string $resultLink;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(string $template, string $subject, string $csv, string $resultLink, ?string $locale = null)
+    public function __construct(public string $template, string $subject, public string $csv, public string $resultLink, ?string $locale = null)
     {
-        $this->template = $template;
         $this->subject  = $subject;
-        $this->csv  = $csv;
-        $this->resultLink = $resultLink;
         /** @var ApiUser $user */
         $user = Auth::user();
         $this->personalization = $user->personalization;

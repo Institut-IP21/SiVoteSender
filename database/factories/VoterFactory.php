@@ -34,19 +34,15 @@ class VoterFactory extends Factory
 
     public function verifiedEmail()
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'email_verified' => $this->faker->datetime,
-            ];
-        });
+        return $this->state(fn(array $attributes) => [
+            'email_verified' => $this->faker->datetime,
+        ]);
     }
 
     public function hasPhone()
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'phone' => $this->faker->e164PhoneNumber,
-            ];
-        });
+        return $this->state(fn(array $attributes) => [
+            'phone' => $this->faker->e164PhoneNumber,
+        ]);
     }
 }

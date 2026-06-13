@@ -18,11 +18,11 @@ class Sender
     public function sendEmail(Voter $voter, Mailable $mailable, VoterList|ModelsVerification $order, string $batch = ''): ?SentMessage
     {
         if ($voter->email_blocked) {
-            Log::info('Sending blocked', ['to' => $voter->id, 'type' => get_class($mailable)]);
+            Log::info('Sending blocked', ['to' => $voter->id, 'type' => $mailable::class]);
             return null;
         }
 
-        switch (get_class($order)) {
+        switch ($order::class) {
             case ModelsVerification::class:
                 $voterlist = $order->voterlist_id;
                 $verification = $order->id;
@@ -40,7 +40,7 @@ class Sender
         $voterEmail = $voter->email;
         $result = $this->checkAndSend($voterEmail, $mailable);
 
-        Log::info('Sent message', ['to' => $voter->id, 'type' => get_class($mailable)]);
+        Log::info('Sent message', ['to' => $voter->id, 'type' => $mailable::class]);
 
         $sentMessage = SentMessage::create(
             [
@@ -61,7 +61,7 @@ class Sender
     {
         $result = $this->checkAndSend($to, $mailable);
 
-        Log::info('Sent test message', ['to' => $to, 'type' => get_class($mailable)]);
+        Log::info('Sent test message', ['to' => $to, 'type' => $mailable::class]);
 
         return true;
     }

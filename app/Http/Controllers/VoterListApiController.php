@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use App\Http\Resources\VoterListBasic;
 use App\Http\Resources\VoterListFull;
 use App\Http\Resources\VoterBasic;
@@ -15,12 +16,12 @@ use Illuminate\Support\Facades\Log;
 class VoterListApiController extends Controller
 {
 
-    public function show(VoterList $voterlist)
+    public function show(VoterList $voterlist): VoterListFull
     {
         return new VoterListFull($voterlist);
     }
 
-    public function showBasic(VoterList $voterlist)
+    public function showBasic(VoterList $voterlist): VoterListBasic
     {
         return new VoterListBasic($voterlist);
     }
@@ -95,13 +96,13 @@ class VoterListApiController extends Controller
         );
     }
 
-    public function delete(VoterList $voterlist)
+    public function delete(VoterList $voterlist): JsonResponse
     {
         $voterlist->delete();
         return $this->basicResponse(200);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): JsonResponse|VoterListFull
     {
         $params = $request->all();
         $settings = [
@@ -123,7 +124,7 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    public function update(Request $request, VoterList $voterlist)
+    public function update(Request $request, VoterList $voterlist): JsonResponse|VoterListFull
     {
         $params = $request->all();
         $settings = [
@@ -141,7 +142,7 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    public function addVoters(Request $request, VoterList $voterlist)
+    public function addVoters(Request $request, VoterList $voterlist): JsonResponse|VoterListFull
     {
         $params = $request->all();
         $settings = [
@@ -159,7 +160,7 @@ class VoterListApiController extends Controller
             return $errors;
         }
 
-        $voters = json_decode($params['voters']);
+        $voters = json_decode((string) $params['voters']);
         foreach ($voters as $voterData) {
             $voter = Voter::create(
                 [
@@ -176,7 +177,7 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    public function removeVoters(Request $request, VoterList $voterlist)
+    public function removeVoters(Request $request, VoterList $voterlist): JsonResponse|VoterListFull
     {
         $params = $request->all();
         $settings = [
@@ -188,7 +189,7 @@ class VoterListApiController extends Controller
             return $errors;
         }
 
-        $voters = json_decode($params['voters'], true);
+        $voters = json_decode((string) $params['voters'], true);
         if (!is_array($voters) || $voters === [] || !array_is_list($voters)) {
             return $this->basicResponse(400, ['error' => 'Voters have to be an array of IDs!']);
         }
@@ -398,7 +399,7 @@ class VoterListApiController extends Controller
             return $errors;
         }
 
-        $to       = json_decode($params['to']);
+        $to       = json_decode((string) $params['to']);
         $url      = $params['url'];
         $template = $params['template'];
         $subject  = $params['subject'];

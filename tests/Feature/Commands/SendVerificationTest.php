@@ -13,7 +13,7 @@ class SendVerificationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testSendVerificationSuccess()
+    public function testSendVerificationSuccess(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'Verify List']);
         $verification = Verification::factory()->create([
@@ -24,9 +24,7 @@ class SendVerificationTest extends TestCase
         $mock = Mockery::mock(VerificationService::class);
         $mock->shouldReceive('sendInvites')
             ->once()
-            ->with(Mockery::on(function ($v) use ($verification) {
-                return $v->id === $verification->id;
-            }))
+            ->with(Mockery::on(fn($v) => $v->id === $verification->id))
             ->andReturn(true);
 
         $this->app->instance(VerificationService::class, $mock);
@@ -39,7 +37,7 @@ class SendVerificationTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testSendVerificationCancelled()
+    public function testSendVerificationCancelled(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'Cancel List']);
         $verification = Verification::factory()->create([
@@ -55,7 +53,7 @@ class SendVerificationTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testSendVerificationNotFound()
+    public function testSendVerificationNotFound(): void
     {
         $this->artisan('evote:send:verification', [
             '--verification' => 999,

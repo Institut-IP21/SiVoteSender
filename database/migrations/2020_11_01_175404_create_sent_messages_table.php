@@ -12,9 +12,9 @@ class CreateSentMessagesTable extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('sent_messages', function (Blueprint $table) {
+        Schema::create('sent_messages', function (Blueprint $table): void {
             $table->id();
             $table->enum('type', ['sms', 'email']);
             $table->foreignId('voter_id');
@@ -49,7 +49,7 @@ class CreateSentMessagesTable extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('sent_messages');
     }

@@ -2,15 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 /**
  * @property int $id
  * @property string $owner
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Personalization|null $personalization
+ * @method static Builder<static>|ApiUser newModelQuery()
+ * @method static Builder<static>|ApiUser newQuery()
+ * @method static Builder<static>|ApiUser query()
+ * @mixin \Eloquent
  */
 class ApiUser extends Authenticatable
 {

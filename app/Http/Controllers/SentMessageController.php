@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\VoterList;
 use App\Http\Resources\SentMessageFull;
 use App\Models\SentMessage;
 use Illuminate\Http\JsonResponse;
@@ -25,7 +26,7 @@ class SentMessageController extends Controller
 
         /** @var SentMessage $first */
         $first = $data->first();
-        /** @var \App\Models\VoterList $voterList */
+        /** @var VoterList $voterList */
         $voterList = $first->voterList;
         abort_if($this->checkOwner($voterList->owner), 403);
 

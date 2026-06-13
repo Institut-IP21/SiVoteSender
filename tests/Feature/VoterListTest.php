@@ -52,7 +52,7 @@ class VoterListTest extends TestCase
         return $response->json()['data']['voters'][0]['id'];
     }
 
-    public function testMissingAuth()
+    public function testMissingAuth(): void
     {
         $response = $this
             ->withHeaders([
@@ -63,7 +63,7 @@ class VoterListTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    public function testMissingOwner()
+    public function testMissingOwner(): void
     {
         $response = $this
             ->withHeaders([
@@ -74,7 +74,7 @@ class VoterListTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    public function testCreateVoterList()
+    public function testCreateVoterList(): void
     {
         $title = "Test VoterList";
 
@@ -93,7 +93,7 @@ class VoterListTest extends TestCase
         $response->assertJsonFragment(['owner' => $this->owner]);
     }
 
-    public function testWrongOwner()
+    public function testWrongOwner(): void
     {
         $id = $this->createVoterList();
 
@@ -107,7 +107,7 @@ class VoterListTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function testGetVoterList()
+    public function testGetVoterList(): void
     {
         $title = "Test VoterList";
         $id = $this->createVoterList($title);
@@ -125,7 +125,7 @@ class VoterListTest extends TestCase
         $response->assertJsonFragment(['owner' => $this->owner]);
     }
 
-    public function testUpdateVoterList()
+    public function testUpdateVoterList(): void
     {
         $id = $this->createVoterList();
         $title = "Test VoterList NEW";
@@ -145,7 +145,7 @@ class VoterListTest extends TestCase
         $response->assertJsonFragment(['owner' => $this->owner]);
     }
 
-    public function testAddVoters()
+    public function testAddVoters(): void
     {
         $id = $this->createVoterList();
 
@@ -171,7 +171,7 @@ class VoterListTest extends TestCase
         $response->assertJsonFragment(['owner' => $this->owner]);
     }
 
-    public function testGetListOfVotersForVoterList()
+    public function testGetListOfVotersForVoterList(): void
     {
         $voterlistId = $this->createVoterList();
         $voterId = $this->addVotersToList($voterlistId);
@@ -189,7 +189,7 @@ class VoterListTest extends TestCase
         $response->assertJsonCount(2, 'data');
     }
 
-    public function testRemoveVoters()
+    public function testRemoveVoters(): void
     {
         $voterlistId = $this->createVoterList();
         $voterId = $this->addVotersToList($voterlistId);
@@ -217,7 +217,7 @@ class VoterListTest extends TestCase
      * Security regression (IDOR): an owner must not be able to view another
      * owner's voter via /api/voter/{voter} — the can:view,voter guard.
      */
-    public function testCannotViewVoterOfAnotherOwner()
+    public function testCannotViewVoterOfAnotherOwner(): void
     {
         $voterlistId = $this->createVoterList();
         $voterId = $this->addVotersToList($voterlistId);
@@ -236,7 +236,7 @@ class VoterListTest extends TestCase
      * Security regression (IDOR): an owner must not be able to delete another
      * owner's voter via /api/voter/{voter} — the can:delete,voter guard.
      */
-    public function testCannotDeleteVoterOfAnotherOwner()
+    public function testCannotDeleteVoterOfAnotherOwner(): void
     {
         $voterlistId = $this->createVoterList();
         $voterId = $this->addVotersToList($voterlistId);
@@ -262,7 +262,7 @@ class VoterListTest extends TestCase
      * voters that belong to the targeted list. Passing a foreign owner's voter
      * ID is a no-op for that voter (it stays alive and on its own list).
      */
-    public function testRemoveVotersCannotDeleteForeignOwnerVoter()
+    public function testRemoveVotersCannotDeleteForeignOwnerVoter(): void
     {
         // Owner A's list + voter (the victim).
         $victimListId = $this->createVoterList('Victim list');
@@ -295,7 +295,7 @@ class VoterListTest extends TestCase
         ])->get('/api/voter/' . $victimVoterId)->assertSuccessful();
     }
 
-    public function testGetListOfVoterLists()
+    public function testGetListOfVoterLists(): void
     {
         $title = "Test VoterList";
         $id = $this->createVoterList($title);
@@ -313,7 +313,7 @@ class VoterListTest extends TestCase
         $response->assertJsonFragment(['owner' => $this->owner]);
     }
 
-    public function testRemoveVoterList()
+    public function testRemoveVoterList(): void
     {
         $id = $this->createVoterList('TBD');
 

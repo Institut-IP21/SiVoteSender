@@ -11,14 +11,14 @@ class VerificationListTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testEmptyList()
+    public function testEmptyList(): void
     {
         $this->artisan('evote:list:verification')
             ->expectsOutput('No verifications found.')
             ->assertExitCode(0);
     }
 
-    public function testWithEntries()
+    public function testWithEntries(): void
     {
         $voterList = VoterList::factory()->create();
         $verification = Verification::factory()->create([
@@ -33,7 +33,7 @@ class VerificationListTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testFilterByVoterList()
+    public function testFilterByVoterList(): void
     {
         $voterListA = VoterList::factory()->create();
         $voterListB = VoterList::factory()->create();

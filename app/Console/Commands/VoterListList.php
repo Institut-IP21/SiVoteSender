@@ -12,7 +12,7 @@ class VoterListList extends Command
 
     protected $description = 'List voter lists';
 
-    public function handle()
+    public function handle(): int
     {
         $query = VoterList::query();
 
@@ -27,14 +27,12 @@ class VoterListList extends Command
             return 0;
         }
 
-        $rows = $voterLists->map(function ($voterList) {
-            return [
-                $voterList->id,
-                $voterList->title,
-                $voterList->voters()->count(),
-                $voterList->created_at,
-            ];
-        });
+        $rows = $voterLists->map(fn($voterList) => [
+            $voterList->id,
+            $voterList->title,
+            $voterList->voters()->count(),
+            $voterList->created_at,
+        ]);
 
         $this->table(['ID', 'Title', 'Voters', 'Created At'], $rows);
 

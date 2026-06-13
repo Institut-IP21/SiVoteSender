@@ -13,7 +13,7 @@ class SendInvitesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testSendInvitesSuccess()
+    public function testSendInvitesSuccess(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'Invite List']);
         $voter1 = Voter::factory()->create(['email' => 'v1@example.com']);
@@ -33,7 +33,7 @@ class SendInvitesTest extends TestCase
         $mock->shouldReceive('sendInvites')
             ->once()
             ->with(
-                Mockery::on(fn ($vl) => $vl->id === $voterList->id),
+                Mockery::on(fn ($vl): bool => $vl->id === $voterList->id),
                 $codes,
                 'https://vote.example.com/%%CODE%%',
                 $batchUuid,
@@ -59,7 +59,7 @@ class SendInvitesTest extends TestCase
         unlink($templatePath);
     }
 
-    public function testSendInvitesCodeCountMismatch()
+    public function testSendInvitesCodeCountMismatch(): void
     {
         $voterList = VoterList::factory()->create();
         $voter = Voter::factory()->create();
@@ -85,7 +85,7 @@ class SendInvitesTest extends TestCase
         unlink($templatePath);
     }
 
-    public function testSendInvitesUrlMissingCode()
+    public function testSendInvitesUrlMissingCode(): void
     {
         $voterList = VoterList::factory()->create();
 
@@ -109,7 +109,7 @@ class SendInvitesTest extends TestCase
         unlink($templatePath);
     }
 
-    public function testSendInvitesMissingVoterList()
+    public function testSendInvitesMissingVoterList(): void
     {
         $this->artisan('evote:send:invites')
             ->expectsOutput('Voter list ID is required. Provide --voterlist.')

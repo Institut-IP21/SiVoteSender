@@ -2,6 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\Voter;
+use App\Policies\VoterPolicy;
+use App\Models\SentMessage;
+use App\Policies\SentMessagePolicy;
+use App\Models\VoterList;
+use App\Policies\VoterListPolicy;
+use App\Models\Verification;
+use App\Policies\VerificationPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -12,10 +20,10 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        \App\Models\Voter::class => \App\Policies\VoterPolicy::class,
-        \App\Models\SentMessage::class => \App\Policies\SentMessagePolicy::class,
-        \App\Models\VoterList::class => \App\Policies\VoterListPolicy::class,
-        \App\Models\Verification::class => \App\Policies\VerificationPolicy::class,
+        Voter::class => VoterPolicy::class,
+        SentMessage::class => SentMessagePolicy::class,
+        VoterList::class => VoterListPolicy::class,
+        Verification::class => VerificationPolicy::class,
     ];
 
     /**
@@ -23,7 +31,7 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->registerPolicies();
 

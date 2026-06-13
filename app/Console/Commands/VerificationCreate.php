@@ -16,7 +16,7 @@ class VerificationCreate extends Command
 
     protected $description = 'Create a new verification';
 
-    public function handle()
+    public function handle(): int
     {
         $voterListId = $this->option('voterlist');
 
@@ -26,9 +26,7 @@ class VerificationCreate extends Command
                 $this->error('No voter lists found.');
                 return 1;
             }
-            $choices = $voterLists->mapWithKeys(function ($vl) {
-                return [$vl->id => "{$vl->id} - {$vl->title}"];
-            })->toArray();
+            $choices = $voterLists->mapWithKeys(fn($vl) => [$vl->id => "{$vl->id} - {$vl->title}"])->toArray();
             $selected = $this->choice('Select a voter list', $choices);
             $voterListId = array_search($selected, $choices);
         }
@@ -43,7 +41,7 @@ class VerificationCreate extends Command
         $subject = $this->option('subject') ?? $this->ask('Enter email subject');
         $template = $this->option('template') ?? $this->ask('Enter email template (must contain %%LINK%%)');
 
-        if (strpos($template, '%%LINK%%') === false) {
+        if (!str_contains((string) $template, '%%LINK%%')) {
             $this->error('Template must contain %%LINK%%');
             return 1;
         }

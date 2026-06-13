@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Illuminate\Http\Request;
 use Aws\Sns\Message;
 use Aws\Sns\MessageValidator;
 use Closure;
@@ -16,7 +17,7 @@ class VerifySnsMessage
      * the authentication for this externally-called webhook (AWS cannot send the
      * app's own API token / Owner header).
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @param  \Closure  $next
      * @return mixed
      */

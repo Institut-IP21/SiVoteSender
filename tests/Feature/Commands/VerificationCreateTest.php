@@ -10,7 +10,7 @@ class VerificationCreateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testCreateWithOptions()
+    public function testCreateWithOptions(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'My List']);
 
@@ -31,7 +31,7 @@ class VerificationCreateTest extends TestCase
         ]);
     }
 
-    public function testCreateInteractivePrompts()
+    public function testCreateInteractivePrompts(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'Prompted List']);
 
@@ -49,7 +49,7 @@ class VerificationCreateTest extends TestCase
         ]);
     }
 
-    public function testCreateFailsWithoutLink()
+    public function testCreateFailsWithoutLink(): void
     {
         $voterList = VoterList::factory()->create();
 
@@ -62,7 +62,7 @@ class VerificationCreateTest extends TestCase
             ->assertExitCode(1);
     }
 
-    public function testCreateFailsWithInvalidVoterList()
+    public function testCreateFailsWithInvalidVoterList(): void
     {
         $this->artisan('evote:make:verification', [
             '--voterlist' => 999,

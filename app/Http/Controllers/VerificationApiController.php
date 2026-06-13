@@ -46,7 +46,7 @@ class VerificationApiController extends Controller
 
         $query->whereHas(
             'voterlist',
-            function (Builder $query) {
+            function (Builder $query): void {
                 /** @var Builder<VoterList> $query */
                 $query->where('owner', $this->getOwner());
             }
@@ -209,7 +209,7 @@ class VerificationApiController extends Controller
             return $errors;
         }
 
-        $to = json_decode($params['to']);
+        $to = json_decode((string) $params['to']);
 
         try {
             $status = $service->sendTestInvites($verification, $to);

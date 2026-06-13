@@ -12,7 +12,7 @@ class VoterRemove extends Command
 
     protected $description = 'Remove a voter';
 
-    public function handle()
+    public function handle(): int
     {
         $voterId = $this->option('voter');
 

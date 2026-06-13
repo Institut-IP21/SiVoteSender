@@ -11,9 +11,9 @@ class CreateGlobalEmailBlockListsTable extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('global_email_block_lists', function (Blueprint $table) {
+        Schema::create('global_email_block_lists', function (Blueprint $table): void {
             $table->string('email');
             $table->enum(
                 'status',
@@ -33,7 +33,7 @@ class CreateGlobalEmailBlockListsTable extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('global_email_block_lists');
     }

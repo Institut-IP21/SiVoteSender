@@ -19,7 +19,7 @@ class SendResults extends Command
 
     protected $description = 'Send result emails to voters';
 
-    public function handle(Ballot $ballotService)
+    public function handle(Ballot $ballotService): int
     {
         $voterListId = $this->option('voterlist');
 

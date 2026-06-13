@@ -2,10 +2,12 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+use App\Models\SentMessage;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\SentMessage
+ * @mixin SentMessage
  */
 class SentMessageBasic extends JsonResource
 {
@@ -14,7 +16,8 @@ class SentMessageBasic extends JsonResource
      *
      * @return array<string, mixed>
      */
-    public function toArray(\Illuminate\Http\Request $request): array
+    #[\Override]
+    public function toArray(Request $request): array
     {
         return [
             'id'             => $this->id,

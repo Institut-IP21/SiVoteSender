@@ -15,8 +15,8 @@ class SentMessagePolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\SentMessage  $sentMessage
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param SentMessage $sentMessage
+     * @return Response|bool
      */
     public function view(User $user, SentMessage $sentMessage): Response|bool
     {
@@ -30,8 +30,8 @@ class SentMessagePolicy
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\SentMessage  $sentMessage
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param SentMessage $sentMessage
+     * @return Response|bool
      */
     public function update(User $user, SentMessage $sentMessage): Response|bool
     {
@@ -45,8 +45,8 @@ class SentMessagePolicy
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\ApiUser  $user
-     * @param  \App\Models\SentMessage  $sentMessage
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @param SentMessage $sentMessage
+     * @return Response|bool
      */
     public function delete(User $user, SentMessage $sentMessage): Response|bool
     {

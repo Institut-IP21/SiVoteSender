@@ -19,7 +19,7 @@ class SendInvites extends Command
 
     protected $description = 'Send ballot invite emails to voters';
 
-    public function handle(Ballot $ballotService)
+    public function handle(Ballot $ballotService): int
     {
         $voterListId = $this->option('voterlist');
 
@@ -67,7 +67,7 @@ class SendInvites extends Command
             return 1;
         }
 
-        if (strpos($url, '%%CODE%%') === false) {
+        if (!str_contains($url, '%%CODE%%')) {
             $this->error('Voting URL must contain %%CODE%%.');
             return 1;
         }

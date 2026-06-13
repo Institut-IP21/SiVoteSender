@@ -11,9 +11,9 @@ class CreateVerificationsTable extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('verifications', function (Blueprint $table) {
+        Schema::create('verifications', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('voterlist_id');
             $table->text('template');
@@ -30,7 +30,7 @@ class CreateVerificationsTable extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('verifications');
     }

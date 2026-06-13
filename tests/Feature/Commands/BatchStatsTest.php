@@ -12,7 +12,7 @@ class BatchStatsTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testDisplayStats()
+    public function testDisplayStats(): void
     {
         $voterList = VoterList::factory()->create();
         $voter1 = Voter::factory()->create();
@@ -52,7 +52,7 @@ class BatchStatsTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testNoMessagesError()
+    public function testNoMessagesError(): void
     {
         $this->artisan('evote:stats:batch', ['--batch' => 'nonexistent-batch'])
             ->expectsOutput('No messages found for batch nonexistent-batch')

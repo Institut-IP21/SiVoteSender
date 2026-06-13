@@ -11,7 +11,7 @@ class VoterListShowTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testShowDetails()
+    public function testShowDetails(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'Show Test']);
 
@@ -28,7 +28,7 @@ class VoterListShowTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testShowWithVoters()
+    public function testShowWithVoters(): void
     {
         $voterList = VoterList::factory()->create(['title' => 'With Voters']);
         $voter1 = Voter::factory()->create();
@@ -48,7 +48,7 @@ class VoterListShowTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testShowNotFound()
+    public function testShowNotFound(): void
     {
         $this->artisan('evote:show:voterlist', ['--voterlist' => 999])
             ->expectsOutput('Voter list with ID 999 not found.')

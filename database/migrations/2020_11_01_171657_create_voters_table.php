@@ -11,9 +11,9 @@ class CreateVotersTable extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('voters', function (Blueprint $table) {
+        Schema::create('voters', function (Blueprint $table): void {
             $table->id();
             $table->string('title')->nullable();
             $table->string('email')->nullable();
@@ -32,7 +32,7 @@ class CreateVotersTable extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('voters');
     }

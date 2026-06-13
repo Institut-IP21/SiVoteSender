@@ -11,9 +11,9 @@ class CreatePivotVoterListVoter extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('voterlist_voter', function (Blueprint $table) {
+        Schema::create('voterlist_voter', function (Blueprint $table): void {
             $table->foreignId('voterlist_id');
             $table->foreignId('voter_id');
             $table->timestamps();
@@ -26,7 +26,7 @@ class CreatePivotVoterListVoter extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('voterlist_voter');
     }

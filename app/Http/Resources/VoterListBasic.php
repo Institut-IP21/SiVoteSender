@@ -2,10 +2,12 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+use App\Models\VoterList;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\VoterList
+ * @mixin VoterList
  */
 class VoterListBasic extends JsonResource
 {
@@ -14,7 +16,8 @@ class VoterListBasic extends JsonResource
      *
      * @return array<string, mixed>
      */
-    public function toArray(\Illuminate\Http\Request $request): array
+    #[\Override]
+    public function toArray(Request $request): array
     {
         return [
             'id'           => $this->id,
