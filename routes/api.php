@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AmazonController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\SentMessageController;
 use App\Http\Controllers\VerificationApiController;
@@ -23,9 +22,8 @@ Route::fallback(function () {
     return response()->json(['message' => 'Not Found.'], 404);
 })->name('api.fallback.404');
 
-Route::middleware('api')->prefix('sns')->group(function () {
-    Route::post('/webhook', [AmazonController::class, 'post'])->name('email.sns.notifications');
-});
+// NOTE: the AWS SNS webhook is registered separately in bootstrap/app.php
+// (routes/sns.php) so it is authenticated by SNS signature instead of auth.api.
 
 Route::middleware('api')->prefix('owner')->group(function () {
     Route::post('/personalization', [OwnerController::class, 'updatePersonalization'])->name('owner.personalization');
@@ -33,7 +31,7 @@ Route::middleware('api')->prefix('owner')->group(function () {
 
 Route::middleware('api')->prefix('messages')->group(function () {
     Route::get('/batch/{batchId}/stats', [SentMessageController::class, 'batchStats'])->name('sentMessage.batch.stats');
-    Route::get('/{sentMessage}', [SentMessageController::class, 'show'])->name('sentMessage.show');
+    Route::get('/{sentMessage}', [SentMessageController::class, 'show'])->name('sentMessage.show')->middleware('can:view,sentMessage');
 });
 
 Route::middleware('api')->prefix('verification')->group(function () {
@@ -49,8 +47,8 @@ Route::middleware('api')->prefix('verification')->group(function () {
 });
 
 Route::middleware('api')->prefix('voter')->group(function () {
-    Route::get('/{voter}', [VoterController::class, 'show'])->name('voter.show');
-    Route::delete('/{voter}', [VoterController::class, 'delete'])->name('voter.remove');
+    Route::get('/{voter}', [VoterController::class, 'show'])->name('voter.show')->middleware('can:view,voter');
+    Route::delete('/{voter}', [VoterController::class, 'delete'])->name('voter.remove')->middleware('can:delete,voter');
 });
 
 Route::middleware('api')->prefix('voterlist')->group(function () {

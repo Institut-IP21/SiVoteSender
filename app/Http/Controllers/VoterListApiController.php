@@ -188,11 +188,21 @@ class VoterListApiController extends Controller
             return $errors;
         }
 
-        $voters = json_decode($params['voters']);
-        if (!is_array($voters) && !is_numeric($voters[0])) {
+        $voters = json_decode($params['voters'], true);
+        if (!is_array($voters) || $voters === [] || !array_is_list($voters)) {
             return $this->basicResponse(400, ['error' => 'Voters have to be an array of IDs!']);
         }
-        Voter::destroy($voters);
+        foreach ($voters as $voterId) {
+            if (!is_int($voterId) && !(is_string($voterId) && ctype_digit($voterId))) {
+                return $this->basicResponse(400, ['error' => 'Voters have to be an array of IDs!']);
+            }
+        }
+
+        // Only touch voters that actually belong to THIS list, so a caller who
+        // owns one list cannot delete another owner's voters by passing foreign IDs.
+        $ownIds = $voterlist->voters()->whereIn('voters.id', $voters)->pluck('voters.id')->all();
+        $voterlist->voters()->detach($ownIds);
+        Voter::destroy($ownIds);
 
         return new VoterListFull($voterlist);
     }

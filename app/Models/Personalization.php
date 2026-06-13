@@ -2,10 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Personalization
+ * @property int $id
+ * @property string $owner
+ * @property string|null $photo_url
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  */
 class Personalization extends Model
 {
@@ -19,7 +24,7 @@ class Personalization extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var list<string>
      */
     protected $fillable = [
         'owner',
@@ -28,7 +33,12 @@ class Personalization extends Model
 
     //
 
-    public function scopeOwner($query, $id)
+    /**
+     * @param Builder<Personalization> $query
+     * @param mixed $id
+     * @return Builder<Personalization>
+     */
+    public function scopeOwner(Builder $query, mixed $id): Builder
     {
         return $query->where('owner', $id);
     }

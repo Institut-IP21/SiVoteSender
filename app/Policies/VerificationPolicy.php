@@ -12,25 +12,25 @@ class VerificationPolicy
     use HandlesAuthorization;
 
     /**
-     * Determine whether the user can view the model.
+     * Determine whether the user can create the model.
      *
-     * @param  \App\Models\User  $user
-     * @return mixed
+     * @param  \App\Models\ApiUser  $user
+     * @return string
      */
-    public function create(User $user)
+    public function create(User $user): string
     {
         return $user->owner;
     }
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\Verification  $verification
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Verification $verification)
+    public function view(User $user, Verification $verification): Response|bool
     {
-        return $user->owner === $verification->voterlist->owner
+        return $user->owner === $verification->voterList->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -38,13 +38,13 @@ class VerificationPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\Verification  $verification
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Verification $verification)
+    public function update(User $user, Verification $verification): Response|bool
     {
-        return $user->owner === $verification->voterlist->owner
+        return $user->owner === $verification->voterList->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -52,13 +52,13 @@ class VerificationPolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\Verification  $verification
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Verification $verification)
+    public function delete(User $user, Verification $verification): Response|bool
     {
-        return $user->owner === $verification->voterlist->owner
+        return $user->owner === $verification->voterList->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }

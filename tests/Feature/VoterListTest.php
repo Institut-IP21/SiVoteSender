@@ -213,6 +213,88 @@ class VoterListTest extends TestCase
         $response->assertJsonFragment(['owner' => $this->owner]);
     }
 
+    /**
+     * Security regression (IDOR): an owner must not be able to view another
+     * owner's voter via /api/voter/{voter} — the can:view,voter guard.
+     */
+    public function testCannotViewVoterOfAnotherOwner()
+    {
+        $voterlistId = $this->createVoterList();
+        $voterId = $this->addVotersToList($voterlistId);
+
+        $response = $this
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => 'some-other-owner',
+            ])
+            ->get('/api/voter/' . $voterId);
+
+        $response->assertStatus(403);
+    }
+
+    /**
+     * Security regression (IDOR): an owner must not be able to delete another
+     * owner's voter via /api/voter/{voter} — the can:delete,voter guard.
+     */
+    public function testCannotDeleteVoterOfAnotherOwner()
+    {
+        $voterlistId = $this->createVoterList();
+        $voterId = $this->addVotersToList($voterlistId);
+
+        $response = $this
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => 'some-other-owner',
+            ])
+            ->delete('/api/voter/' . $voterId);
+
+        $response->assertStatus(403);
+
+        // The original owner can still see the voter — it was not deleted.
+        $this->withHeaders([
+            'Authorization' => $this->token,
+            'Owner' => $this->owner,
+        ])->get('/api/voter/' . $voterId)->assertSuccessful();
+    }
+
+    /**
+     * Security regression (IDOR): removeVoters must only ever detach/destroy
+     * voters that belong to the targeted list. Passing a foreign owner's voter
+     * ID is a no-op for that voter (it stays alive and on its own list).
+     */
+    public function testRemoveVotersCannotDeleteForeignOwnerVoter()
+    {
+        // Owner A's list + voter (the victim).
+        $victimListId = $this->createVoterList('Victim list');
+        $victimVoterId = $this->addVotersToList($victimListId);
+
+        // Owner B's own list, into which they will try to smuggle A's voter id.
+        $attackerListId = $this->withHeaders([
+            'Authorization' => $this->token,
+            'Owner' => 'some-other-owner',
+        ])->post('/api/voterlist', ['title' => 'Attacker list'])
+            ->json()['data']['id'];
+
+        $response = $this
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => 'some-other-owner',
+            ])
+            ->delete('/api/voterlist/' . $attackerListId . '/voters', [
+                'voters' => json_encode([$victimVoterId]),
+            ]);
+
+        // The call itself is authorized for the attacker's own list, but the
+        // foreign voter id must be ignored — not deleted.
+        $response->assertSuccessful();
+
+        // Owner A's voter is still there.
+        $this->withHeaders([
+            'Authorization' => $this->token,
+            'Owner' => $this->owner,
+        ])->get('/api/voter/' . $victimVoterId)->assertSuccessful();
+    }
+
     public function testGetListOfVoterLists()
     {
         $title = "Test VoterList";

@@ -31,6 +31,8 @@ class TestEmailCommand extends Command
      */
     protected $description = 'Command description';
 
+    protected Sender $sender;
+
     /**
      * Create a new command instance.
      *
@@ -47,12 +49,15 @@ class TestEmailCommand extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
+        /** @var string $email */
         $email = $this->argument('email');
 
         $this->sender->checkAndSend($email, new TestMail());
 
         $this->info('Email sent');
+
+        return self::SUCCESS;
     }
 }

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Mail;
 class Sender
 {
 
-    public function sendEmail(Voter $voter, Mailable $mailable, $order, string $batch = ''): ?SentMessage
+    public function sendEmail(Voter $voter, Mailable $mailable, VoterList|ModelsVerification $order, string $batch = ''): ?SentMessage
     {
         if ($voter->email_blocked) {
             Log::info('Sending blocked', ['to' => $voter->id, 'type' => get_class($mailable)]);
@@ -36,7 +36,9 @@ class Sender
         }
 
 
-        $result = $this->checkAndSend($voter->email, $mailable);
+        /** @var string $voterEmail */
+        $voterEmail = $voter->email;
+        $result = $this->checkAndSend($voterEmail, $mailable);
 
         Log::info('Sent message', ['to' => $voter->id, 'type' => get_class($mailable)]);
 
@@ -64,7 +66,7 @@ class Sender
         return true;
     }
 
-    public function checkAndSend(string $to, Mailable $mailable)
+    public function checkAndSend(string $to, Mailable $mailable): mixed
     {
         $blocked = GlobalEmailBlockList::where('email', $to)->first();
 

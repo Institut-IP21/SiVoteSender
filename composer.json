@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "aws/aws-php-sns-message-validator": "^1.10",
         "brianium/paratest": "^7.0",
         "deployer/deployer": "^7.3.1",
         "dyrynda/laravel-cascade-soft-deletes": "^4.0",
@@ -18,11 +19,13 @@
         "vlucas/phpdotenv": "^5.3"
     },
     "require-dev": {
-        "spatie/laravel-ignition": "^2.0",
         "fakerphp/faker": "^1.9.1",
+        "larastan/larastan": "^3",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^8.0",
+        "phpstan/phpstan": "^2",
         "phpunit/phpunit": "^13.0",
+        "spatie/laravel-ignition": "^2.0",
         "spatie/laravel-tail": "^4.3"
     },
     "config": {

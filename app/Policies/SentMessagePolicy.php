@@ -14,13 +14,14 @@ class SentMessagePolicy
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\SentMessage  $sentMessage
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, SentMessage $sentMessage)
+    public function view(User $user, SentMessage $sentMessage): Response|bool
     {
-        return $user->owner === $sentMessage->voterlist->owner
+        $listOwner = $sentMessage->voterList()->value('owner');
+        return $listOwner !== null && $user->owner === $listOwner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -28,13 +29,14 @@ class SentMessagePolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\SentMessage  $sentMessage
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, SentMessage $sentMessage)
+    public function update(User $user, SentMessage $sentMessage): Response|bool
     {
-        return $user->owner === $sentMessage->voterlist->owner
+        $listOwner = $sentMessage->voterList()->value('owner');
+        return $listOwner !== null && $user->owner === $listOwner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -42,13 +44,14 @@ class SentMessagePolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\SentMessage  $sentMessage
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, SentMessage $sentMessage)
+    public function delete(User $user, SentMessage $sentMessage): Response|bool
     {
-        return $user->owner === $sentMessage->voterlist->owner
+        $listOwner = $sentMessage->voterList()->value('owner');
+        return $listOwner !== null && $user->owner === $listOwner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }

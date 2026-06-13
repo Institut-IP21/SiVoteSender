@@ -14,10 +14,10 @@ class VoterListPolicy
     /**
      * Determine whether the user can view any models.
      *
-     * @param  \App\Models\User  $user
-     * @return mixed
+     * @param  \App\Models\ApiUser  $user
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function viewAny(User $user)
+    public function viewAny(User $user): Response|bool
     {
         return true;
     }
@@ -25,11 +25,11 @@ class VoterListPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\VoterList  $voterlist
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, VoterList $voterlist)
+    public function view(User $user, VoterList $voterlist): Response|bool
     {
         return $user->owner === $voterlist->owner
             ? Response::allow()
@@ -39,10 +39,10 @@ class VoterListPolicy
     /**
      * Determine whether the user can create models.
      *
-     * @param  \App\Models\User  $user
-     * @return mixed
+     * @param  \App\Models\ApiUser  $user
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function create(User $user)
+    public function create(User $user): Response|bool
     {
         return true;
     }
@@ -50,11 +50,11 @@ class VoterListPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\VoterList  $voterlist
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, VoterList $voterlist)
+    public function update(User $user, VoterList $voterlist): Response|bool
     {
         return $user->owner === $voterlist->owner
             ? Response::allow()
@@ -64,11 +64,11 @@ class VoterListPolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\VoterList  $voterlist
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, VoterList $voterlist)
+    public function delete(User $user, VoterList $voterlist): Response|bool
     {
         return $user->owner === $voterlist->owner
             ? Response::allow()
