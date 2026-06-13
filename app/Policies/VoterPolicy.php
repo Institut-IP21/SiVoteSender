@@ -20,9 +20,7 @@ class VoterPolicy
      */
     public function view(User $user, Voter $voter): Response|bool
     {
-        /** @var \App\Models\VoterList $firstList */
-        $firstList = $voter->voterLists->first();
-        return $user->owner === $firstList->owner
+        return $voter->voterLists()->where('voterlists.owner', $user->owner)->exists()
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -36,9 +34,7 @@ class VoterPolicy
      */
     public function update(User $user, Voter $voter): Response|bool
     {
-        /** @var \App\Models\VoterList $firstList */
-        $firstList = $voter->voterLists->first();
-        return $user->owner === $firstList->owner
+        return $voter->voterLists()->where('voterlists.owner', $user->owner)->exists()
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -52,9 +48,7 @@ class VoterPolicy
      */
     public function delete(User $user, Voter $voter): Response|bool
     {
-        /** @var \App\Models\VoterList $firstList */
-        $firstList = $voter->voterLists->first();
-        return $user->owner === $firstList->owner
+        return $voter->voterLists()->where('voterlists.owner', $user->owner)->exists()
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
