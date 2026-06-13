@@ -53,7 +53,7 @@ class BallotInvite extends Mailable
     public function build()
     {
         return $this
-            ->subject($this->subject ?? __('emails.invite.subject'))
+            ->subject($this->subject)
             ->markdown('emails.ballot-invite');
     }
 }

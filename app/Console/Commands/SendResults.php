@@ -41,6 +41,7 @@ class SendResults extends Command
             return 1;
         }
 
+        /** @var string $template */
         $template = file_get_contents($templatePath);
 
         $subject = $this->option('subject');
@@ -55,6 +56,7 @@ class SendResults extends Command
             return 1;
         }
 
+        /** @var string $csv */
         $csv = file_get_contents($csvPath);
 
         $resultLink = $this->option('result-link') ?? '';

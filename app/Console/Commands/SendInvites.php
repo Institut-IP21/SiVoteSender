@@ -41,7 +41,9 @@ class SendInvites extends Command
             return 1;
         }
 
-        $codes = json_decode(file_get_contents($codesPath), true);
+        /** @var string $codesJson */
+        $codesJson = file_get_contents($codesPath);
+        $codes = json_decode($codesJson, true);
         if (!is_array($codes)) {
             $this->error('Codes file must contain a valid JSON array.');
             return 1;
@@ -53,6 +55,7 @@ class SendInvites extends Command
             return 1;
         }
 
+        /** @var string $template */
         $template = file_get_contents($templatePath);
 
         $subject = $this->option('subject');

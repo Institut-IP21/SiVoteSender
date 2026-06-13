@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use App\Http\Resources\VoterListBasic;
 use App\Http\Resources\VoterListFull;
 use App\Http\Resources\VoterBasic;
@@ -26,7 +27,7 @@ class VoterListApiController extends Controller
         return new VoterListBasic($voterlist);
     }
 
-    public function list(Request $request)
+    public function list(Request $request): AnonymousResourceCollection|JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -62,7 +63,7 @@ class VoterListApiController extends Controller
         );
     }
 
-    public function listVoters(Request $request, VoterList $voterlist)
+    public function listVoters(Request $request, VoterList $voterlist): AnonymousResourceCollection|JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -208,7 +209,7 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    public function sendInvites(Ballot $service, Request $request, VoterList $voterlist)
+    public function sendInvites(Ballot $service, Request $request, VoterList $voterlist): JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -268,7 +269,7 @@ class VoterListApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    public function sendSessionInvites(Ballot $service, Request $request, VoterList $voterlist)
+    public function sendSessionInvites(Ballot $service, Request $request, VoterList $voterlist): JsonResponse
     {
         $params = $request->all();
         $settings = [
@@ -320,7 +321,7 @@ class VoterListApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    public function sendResults(Ballot $service, Request $request, VoterList $voterlist)
+    public function sendResults(Ballot $service, Request $request, VoterList $voterlist): JsonResponse
     {
 
         $params = $request->all();
@@ -366,7 +367,7 @@ class VoterListApiController extends Controller
         return $this->basicResponse(200);
     }
 
-    public function startTest(Ballot $service, Request $request)
+    public function startTest(Ballot $service, Request $request): JsonResponse
     {
         $params = $request->all();
         $settings = [
