@@ -4,6 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string $email
+ * @property string $status
+ * @property string|null $status_msg
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ */
 class GlobalEmailBlockList extends Model
 {
     const STATUS_BOUNCE      = 'bounce';
@@ -19,7 +26,7 @@ class GlobalEmailBlockList extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var list<string>
      */
     protected $fillable = [
         'email',

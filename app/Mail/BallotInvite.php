@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\Models\ApiUser;
+use App\Models\Personalization;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -11,11 +13,10 @@ class BallotInvite extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $code;
-    public $url;
-    public $template;
-    public $subject;
-    public $personalization;
+    public string $code;
+    public string $url;
+    public string $template;
+    public ?Personalization $personalization;
 
     /**
      * Create a new message instance.
@@ -33,7 +34,9 @@ class BallotInvite extends Mailable
         $this->url      = $url;
         $this->template = $template;
         $this->subject  = $subject;
-        $this->personalization = Auth::user()->personalization;
+        /** @var ApiUser $user */
+        $user = Auth::user();
+        $this->personalization = $user->personalization;
     }
 
     /**
@@ -44,7 +47,7 @@ class BallotInvite extends Mailable
     public function build()
     {
         return $this
-            ->subject($this->subject ?? __('emails.invite.subject'))
+            ->subject($this->subject)
             ->markdown('emails.ballot-invite');
     }
 }

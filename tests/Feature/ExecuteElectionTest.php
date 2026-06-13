@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Mail\BallotInvite;
 use App\Models\VoterList;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Mail;
@@ -14,6 +14,8 @@ use App\Models\Voter;
 
 class ExecuteElectionTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected function setUp(): void
     {
         parent::setUp();

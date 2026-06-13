@@ -10,13 +10,16 @@ use Illuminate\Support\Facades\Log;
 
 class Ballot
 {
-    protected $sender;
+    protected Sender $sender;
 
     public function __construct(Sender $sender)
     {
         $this->sender = $sender;
     }
 
+    /**
+     * @param array<int, string> $codes
+     */
     public function sendInvites(VoterList $voterlist, array $codes, string $url, string $batch, string $template, string $subject): bool
     {
         $voters = $voterlist->voters;
@@ -50,6 +53,7 @@ class Ballot
         $voters->shuffle();
 
         foreach ($voters as $voter) {
+            /** @var string $code */
             $code = array_pop($codes);
 
             $email = new BallotInvite($code, $url, $template, $subject);
@@ -62,6 +66,9 @@ class Ballot
         return true;
     }
 
+    /**
+     * @param array<int, array<string, string>> $codes
+     */
     public function sendSessionInvites(VoterList $voterlist, array $codes, string $batch, string $template, string $subject): bool
     {
         $voters = $voterlist->voters;
@@ -91,6 +98,7 @@ class Ballot
         }
 
         foreach ($voters as $voter) {
+            /** @var array<string, string> $code */
             $code = array_shift($codes);
 
             $email = new SessionInvite($code, $template, $subject);
@@ -103,6 +111,9 @@ class Ballot
         return true;
     }
 
+    /**
+     * @param array<int, string> $to
+     */
     public function sendInvitesTest(array $to, string $url, string $template, string $subject): bool
     {
         Log::info(

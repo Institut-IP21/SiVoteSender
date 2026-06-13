@@ -68,7 +68,9 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            // web_sender has no User model; auth is header-token based and the
+            // authenticated user is an ApiUser instance.
+            'model' => App\Models\ApiUser::class,
         ],
 
         // 'users' => [

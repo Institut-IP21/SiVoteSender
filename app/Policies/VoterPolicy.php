@@ -14,13 +14,15 @@ class VoterPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\Voter  $voter
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Voter $voter)
+    public function view(User $user, Voter $voter): Response|bool
     {
-        return $user->owner === $voter->voterlists->first()->owner
+        /** @var \App\Models\VoterList $firstList */
+        $firstList = $voter->voterLists->first();
+        return $user->owner === $firstList->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -28,13 +30,15 @@ class VoterPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\Voter  $voter
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Voter $voter)
+    public function update(User $user, Voter $voter): Response|bool
     {
-        return $user->owner === $voter->voterlists->first()->owner
+        /** @var \App\Models\VoterList $firstList */
+        $firstList = $voter->voterLists->first();
+        return $user->owner === $firstList->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }
@@ -42,13 +46,15 @@ class VoterPolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
+     * @param  \App\Models\ApiUser  $user
      * @param  \App\Models\Voter  $voter
-     * @return mixed
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Voter $voter)
+    public function delete(User $user, Voter $voter): Response|bool
     {
-        return $user->owner === $voter->voterlists->first()->owner
+        /** @var \App\Models\VoterList $firstList */
+        $firstList = $voter->voterLists->first();
+        return $user->owner === $firstList->owner
             ? Response::allow()
             : Response::deny('You do not own this.');
     }

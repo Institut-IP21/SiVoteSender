@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\Models\ApiUser;
+use App\Models\Personalization;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -11,7 +13,7 @@ class TestMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $personalization = null;
+    public ?Personalization $personalization = null;
 
     /**
      * Create a new message instance.
@@ -20,7 +22,9 @@ class TestMail extends Mailable
      */
     public function __construct()
     {
-        $this->personalization = \Auth::user()->personalization;
+        /** @var ApiUser $user */
+        $user = \Auth::user();
+        $this->personalization = $user->personalization;
     }
 
     /**

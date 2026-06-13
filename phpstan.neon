@@ -1,0 +1,20 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+
+    paths:
+        - app
+
+    # The level 10 is the highest level
+    level: 8
+
+    excludePaths:
+        # Framework scaffolding — no domain logic; excluded from the strict sweep.
+        - app/Exceptions
+        - app/Http/Kernel.php
+        - app/Http/Middleware
+        - app/Providers
+        - app/Console/Kernel.php
+
+    checkModelProperties: true

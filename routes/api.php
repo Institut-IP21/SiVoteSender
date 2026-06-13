@@ -57,7 +57,7 @@ Route::middleware('api')->prefix('voterlist')->group(function () {
     Route::get('/{voterlist}', [VoterListApiController::class, 'show'])->name('voterlist.show')->middleware('can:view,voterlist');
     Route::get('/{voterlist}/basic', [VoterListApiController::class, 'showBasic'])->name('voterlist.showBasic')->middleware('can:view,voterlist');
     Route::get('/', [VoterListApiController::class, 'list'])->name('voterlist.list')->middleware('can:viewAny,App\Models\VoterList');
-    Route::get('/{voterlist}/voters', [VoterListApiController::class, 'list'])->name('voterlist.voters.list')->middleware('can:view,voterlist');
+    Route::get('/{voterlist}/voters', [VoterListApiController::class, 'listVoters'])->name('voterlist.voters.list')->middleware('can:view,voterlist');
     Route::delete('/{voterlist}', [VoterListApiController::class, 'delete'])->name('voterlist.delete')->middleware('can:delete,voterlist');
     Route::post('/', [VoterListApiController::class, 'create'])->name('voterlist.create')->middleware('can:create,App\Models\VoterList');
     Route::post('/{voterlist}', [VoterListApiController::class, 'update'])->name('voterlist.update')->middleware('can:update,voterlist');

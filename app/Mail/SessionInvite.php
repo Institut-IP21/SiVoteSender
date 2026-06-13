@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\Models\ApiUser;
+use App\Models\Personalization;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -11,14 +13,15 @@ class SessionInvite extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $code;
-    public $template;
-    public $subject;
-    public $personalization;
+    /** @var array<string, string> */
+    public array $code;
+    public string $template;
+    public ?Personalization $personalization;
 
     /**
      * Create a new message instance.
      *
+     * @param array<string, string> $code
      * @return void
      */
     public function __construct(array $code, string $template, string $subject)
@@ -28,7 +31,9 @@ class SessionInvite extends Mailable
         $this->code     = $code;
         $this->template = $template;
         $this->subject  = $subject;
-        $this->personalization = Auth::user()->personalization;
+        /** @var ApiUser $user */
+        $user = Auth::user();
+        $this->personalization = $user->personalization;
     }
 
     /**
@@ -39,7 +44,7 @@ class SessionInvite extends Mailable
     public function build()
     {
         return $this
-            ->subject($this->subject ?? __('emails.invite.subject'))
+            ->subject($this->subject)
             ->markdown('emails.session-invite');
     }
 }
