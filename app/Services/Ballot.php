@@ -17,7 +17,7 @@ class Ballot
         $this->sender = $sender;
     }
 
-    public function sendInvites(VoterList $voterlist, array $codes, string $url, string $batch, string $template, string $subject): bool
+    public function sendInvites(VoterList $voterlist, array $codes, string $url, string $batch, string $template, string $subject, ?string $locale = null): bool
     {
         $voters = $voterlist->voters;
 
@@ -52,7 +52,7 @@ class Ballot
         foreach ($voters as $voter) {
             $code = array_pop($codes);
 
-            $email = new BallotInvite($code, $url, $template, $subject);
+            $email = new BallotInvite($code, $url, $template, $subject, $locale);
 
             $sentMessage = $this->sender->sendEmail($voter, $email, $voterlist, $batch);
 
@@ -62,7 +62,7 @@ class Ballot
         return true;
     }
 
-    public function sendSessionInvites(VoterList $voterlist, array $codes, string $batch, string $template, string $subject): bool
+    public function sendSessionInvites(VoterList $voterlist, array $codes, string $batch, string $template, string $subject, ?string $locale = null): bool
     {
         $voters = $voterlist->voters;
 
@@ -93,7 +93,7 @@ class Ballot
         foreach ($voters as $voter) {
             $code = array_shift($codes);
 
-            $email = new SessionInvite($code, $template, $subject);
+            $email = new SessionInvite($code, $template, $subject, $locale);
 
             $sentMessage = $this->sender->sendEmail($voter, $email, $voterlist, $batch);
 
@@ -103,7 +103,7 @@ class Ballot
         return true;
     }
 
-    public function sendInvitesTest(array $to, string $url, string $template, string $subject): bool
+    public function sendInvitesTest(array $to, string $url, string $template, string $subject, ?string $locale = null): bool
     {
         Log::info(
             'Sending test invite email',
@@ -113,7 +113,7 @@ class Ballot
         foreach ($to as $voter) {
             $code = "TESTCODE";
 
-            $email = new BallotInvite($code, $url, $template, $subject);
+            $email = new BallotInvite($code, $url, $template, $subject, $locale);
 
             $sentMessage = $this->sender->sendTestEmail($voter, $email);
         }
@@ -121,7 +121,7 @@ class Ballot
         return true;
     }
 
-    public function sendResults(VoterList $voterlist, string $batch, string $template, string $subject, string $csv, string $resultLink): bool
+    public function sendResults(VoterList $voterlist, string $batch, string $template, string $subject, string $csv, string $resultLink, ?string $locale = null): bool
     {
         $voters = $voterlist->voters;
 
@@ -142,7 +142,7 @@ class Ballot
         }
 
         foreach ($voters as $voter) {
-            $email = new BallotResult($template, $subject, $csv, $resultLink);
+            $email = new BallotResult($template, $subject, $csv, $resultLink, $locale);
 
             $sentMessage = $this->sender->sendEmail($voter, $email, $voterlist, $batch);
 

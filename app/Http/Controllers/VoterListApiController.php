@@ -223,6 +223,11 @@ class VoterListApiController extends Controller
             'url' =>
             'required|string',
 
+            // Locale the email body/subject were rendered in (organizer's
+            // locale). Used so the auto-appended button label matches.
+            'locale' =>
+            'sometimes|nullable|string',
+
         ];
 
         if ($errors = $this->findErrors($params, $settings)) {
@@ -240,9 +245,10 @@ class VoterListApiController extends Controller
         $batch    = $params['batch'];
         $template = $params['template'];
         $subject  = $params['subject'];
+        $locale   = $params['locale'] ?? null;
 
         try {
-            $status = $service->sendInvites($voterlist, $codes, $url, $batch, $template, $subject);
+            $status = $service->sendInvites($voterlist, $codes, $url, $batch, $template, $subject, $locale);
         } catch (\Exception $e) {
             Log::alert('Error while sending invites', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
@@ -272,6 +278,9 @@ class VoterListApiController extends Controller
             'subject' =>
             'required|string',
 
+            'locale' =>
+            'sometimes|nullable|string',
+
         ];
 
         if ($errors = $this->findErrors($params, $settings)) {
@@ -288,9 +297,10 @@ class VoterListApiController extends Controller
         $batch    = $params['batch'];
         $template = $params['template'];
         $subject  = $params['subject'];
+        $locale   = $params['locale'] ?? null;
 
         try {
-            $status = $service->sendSessionInvites($voterlist, $codes, $batch, $template, $subject);
+            $status = $service->sendSessionInvites($voterlist, $codes, $batch, $template, $subject, $locale);
         } catch (\Exception $e) {
             Log::alert('Error while sending session invites', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
@@ -319,6 +329,9 @@ class VoterListApiController extends Controller
 
             'resultLink' =>
             'required|string',
+
+            'locale' =>
+            'sometimes|nullable|string',
         ];
 
         if ($errors = $this->findErrors($params, $settings)) {
@@ -330,9 +343,10 @@ class VoterListApiController extends Controller
         $subject    = $params['subject'];
         $csv        = $params['csv'];
         $resultLink = $params['resultLink'];
+        $locale     = $params['locale'] ?? null;
 
         try {
-            $status = $service->sendResults($voterlist, $batch, $template, $subject, $csv, $resultLink);
+            $status = $service->sendResults($voterlist, $batch, $template, $subject, $csv, $resultLink, $locale);
         } catch (\Exception $e) {
             Log::alert('Error while sending results', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
@@ -365,6 +379,9 @@ class VoterListApiController extends Controller
             'url' =>
             'required|string',
 
+            'locale' =>
+            'sometimes|nullable|string',
+
         ];
 
         if ($errors = $this->findErrors($params, $settings)) {
@@ -375,9 +392,10 @@ class VoterListApiController extends Controller
         $url      = $params['url'];
         $template = $params['template'];
         $subject  = $params['subject'];
+        $locale   = $params['locale'] ?? null;
 
         try {
-            $status = $service->sendInvitesTest($to, $url, $template, $subject);
+            $status = $service->sendInvitesTest($to, $url, $template, $subject, $locale);
         } catch (\Exception $e) {
             Log::alert('Error while sending test invites', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);

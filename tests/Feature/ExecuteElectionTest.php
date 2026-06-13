@@ -64,6 +64,63 @@ class ExecuteElectionTest extends TestCase
         Mail::assertQueued(BallotInvite::class, 4);
     }
 
+    public function testInviteEmailUsesProvidedLocale()
+    {
+        $voterlist = VoterList::factory()
+            ->has(Voter::factory()->count(2))
+            ->create(['owner' => $this->owner]);
+
+        Mail::fake();
+
+        $response = $this
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => $this->owner,
+            ])
+            ->post('/api/voterlist/' . $voterlist->id . '/send-invites', [
+                'batch' => '5aaa7b5d-41e8-4e40-93b4-acd506403ee4',
+                'codes' => ['code1', 'code2'],
+                'template' => 'Template %%CODE%% and %%LINK%%',
+                'subject' => 'Subject TEST',
+                'url' => 'http://test.lan/%%CODE%%',
+                'locale' => 'sl',
+            ]);
+
+        $response->assertSuccessful();
+
+        Mail::assertQueued(BallotInvite::class, function (BallotInvite $mail) {
+            return $mail->locale === 'sl';
+        });
+    }
+
+    public function testInviteEmailWithoutLocaleLeavesItUnset()
+    {
+        $voterlist = VoterList::factory()
+            ->has(Voter::factory()->count(2))
+            ->create(['owner' => $this->owner]);
+
+        Mail::fake();
+
+        $response = $this
+            ->withHeaders([
+                'Authorization' => $this->token,
+                'Owner' => $this->owner,
+            ])
+            ->post('/api/voterlist/' . $voterlist->id . '/send-invites', [
+                'batch' => '5aaa7b5d-41e8-4e40-93b4-acd506403ee4',
+                'codes' => ['code1', 'code2'],
+                'template' => 'Template %%CODE%% and %%LINK%%',
+                'subject' => 'Subject TEST',
+                'url' => 'http://test.lan/%%CODE%%',
+            ]);
+
+        $response->assertSuccessful();
+
+        Mail::assertQueued(BallotInvite::class, function (BallotInvite $mail) {
+            return $mail->locale === null;
+        });
+    }
+
     public function testStartElectionWithBlockedEmail()
     {
 

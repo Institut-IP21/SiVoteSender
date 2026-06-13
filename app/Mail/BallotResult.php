@@ -22,13 +22,19 @@ class BallotResult extends Mailable
      *
      * @return void
      */
-    public function __construct(string $template, string $subject, string $csv, string $resultLink)
+    public function __construct(string $template, string $subject, string $csv, string $resultLink, ?string $locale = null)
     {
         $this->template = $template;
         $this->subject  = $subject;
         $this->csv  = $csv;
         $this->resultLink = $resultLink;
         $this->personalization = Auth::user()->personalization;
+
+        // Render any auto-appended labels in the same locale the body and
+        // subject were composed in, instead of the sender service default.
+        if (!empty($locale)) {
+            $this->locale($locale);
+        }
     }
 
     /**

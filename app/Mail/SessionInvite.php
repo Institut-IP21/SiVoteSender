@@ -21,7 +21,7 @@ class SessionInvite extends Mailable
      *
      * @return void
      */
-    public function __construct(array $code, string $template, string $subject)
+    public function __construct(array $code, string $template, string $subject, ?string $locale = null)
     {
         $template = str_replace('%%CODE%%', $code['code'], $template);
 
@@ -29,6 +29,12 @@ class SessionInvite extends Mailable
         $this->template = $template;
         $this->subject  = $subject;
         $this->personalization = Auth::user()->personalization;
+
+        // Render the auto-appended button label in the same locale the body and
+        // subject were composed in, instead of the sender service default.
+        if (!empty($locale)) {
+            $this->locale($locale);
+        }
     }
 
     /**
