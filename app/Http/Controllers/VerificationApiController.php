@@ -179,6 +179,9 @@ class VerificationApiController extends Controller
             'template' => __('verification.email_body_template', [
                 // Null-safe: a voter with no list must not fatal here (the `?? ''`
                 // alone wouldn't help — reading ->title on null throws first).
+                // larastan wrongly types BelongsToMany::first() as non-null; the
+                // ?-> is real, so silence the false positive.
+                // @phpstan-ignore nullsafe.neverNull
                 'org' => $voter->voterLists()->first()?->title ?? ''
                 ]
             )
