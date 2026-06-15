@@ -53,4 +53,12 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('sns', function (Request $request) {
             return Limit::perMinute(300)->by($request->ip());
         });
+
+        // Paces outbound e-mail (App\Jobs\SendVoterEmail) under the SES send-rate
+        // quota; over the limit the job is released back instead of throttling.
+        RateLimiter::for('ses', function () {
+            $perSecond = (int) config('services.ses.rate_per_second', 14);
+
+            return Limit::perSecond(max(1, $perSecond));
+        });
     })->create();

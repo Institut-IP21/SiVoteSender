@@ -61,7 +61,7 @@ class ExecuteElectionTest extends TestCase
 
         $response->assertSuccessful();
 
-        Mail::assertQueued(BallotInvite::class, 4);
+        Mail::assertSent(BallotInvite::class, 4);
     }
 
     public function testInviteEmailUsesProvidedLocale(): void
@@ -88,7 +88,7 @@ class ExecuteElectionTest extends TestCase
 
         $response->assertSuccessful();
 
-        Mail::assertQueued(BallotInvite::class, fn(BallotInvite $mail) => $mail->locale === 'sl');
+        Mail::assertSent(BallotInvite::class, fn(BallotInvite $mail) => $mail->locale === 'sl');
     }
 
     public function testInviteEmailWithoutLocaleLeavesItUnset(): void
@@ -114,7 +114,7 @@ class ExecuteElectionTest extends TestCase
 
         $response->assertSuccessful();
 
-        Mail::assertQueued(BallotInvite::class, fn(BallotInvite $mail) => $mail->locale === null);
+        Mail::assertSent(BallotInvite::class, fn(BallotInvite $mail) => $mail->locale === null);
     }
 
     public function testStartElectionWithBlockedEmail(): void
@@ -162,6 +162,6 @@ class ExecuteElectionTest extends TestCase
             );
 
         $response->assertStatus(409);
-        Mail::assertQueued(BallotInvite::class, 0);
+        Mail::assertSent(BallotInvite::class, 0);
     }
 }

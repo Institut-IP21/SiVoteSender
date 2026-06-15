@@ -20,6 +20,12 @@ return [
 
     'default' => env('CACHE_DRIVER', 'file'),
 
+    // Cache store backing the RateLimiter (native Laravel key, read by
+    // CacheServiceProvider). The 'file' store isn't atomic across processes, so
+    // concurrent workers can overshoot a per-second limit; use 'database' in
+    // prod. Null = use the default store above.
+    'limiter' => env('RATE_LIMITER_STORE'),
+
     /*
     |--------------------------------------------------------------------------
     | Cache Stores
