@@ -5,6 +5,7 @@ namespace Tests\Feature\Contract;
 use App\Models\Voter;
 use App\Models\VoterList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -18,6 +19,11 @@ class InviteContractTest extends TestCase
     {
         parent::setUp();
         $this->owner = fake()->uuid();
+
+        // Don't depend on the mailer transport: the send path dispatches
+        // SendVoterEmail (run inline on the sync queue), which would otherwise
+        // attempt a real SMTP delivery.
+        Mail::fake();
     }
 
     private function authHeaders(): array
