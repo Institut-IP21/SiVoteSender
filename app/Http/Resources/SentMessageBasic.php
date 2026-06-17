@@ -27,7 +27,8 @@ class SentMessageBasic extends JsonResource
             'successful'     => $this->successful,
             'status'         => $this->status,
             'status_msg'     => $this->status_msg,
-            'isVerification' => (bool) $this->verification_id
+            'isVerification' => (bool) $this->verification_id,
+            'created_at'     => $this->created_at,
         ];
     }
 }
