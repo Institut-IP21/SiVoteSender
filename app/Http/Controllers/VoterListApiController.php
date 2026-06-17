@@ -75,6 +75,8 @@ class VoterListApiController extends Controller
             'string|in:id,email,title,phone|required_with:sort_direction',
             'sort_direction' =>
             'in:desc,asc|required_with:sort_by',
+            'filter' =>
+            'string|in:all,verified,unverified,bounced',
         ];
 
         if ($errors = $this->findErrors($params, $settings)) {
@@ -82,6 +84,18 @@ class VoterListApiController extends Controller
         }
 
         $query = $voterlist->voters();
+
+        switch ($params['filter'] ?? 'all') {
+            case 'verified':
+                $query->whereNotNull('voters.email_verified');
+                break;
+            case 'unverified':
+                $query->whereNull('voters.email_verified');
+                break;
+            case 'bounced':
+                $query->where('voters.email_blocked', true);
+                break;
+        }
 
         if (!empty($params['sort_by'])) {
             $query->orderBy(
