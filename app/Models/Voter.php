@@ -130,4 +130,20 @@ class Voter extends Model
     {
         return $query->whereNotNull('phone_verified');
     }
+
+    /**
+     * Why this address is blocked, derived from the most recent hard delivery failure:
+     * 'bounce' (permanent bounce) or 'complaint' (marked as spam). Null when not blocked.
+     */
+    public function blockedReason(): ?string
+    {
+        if (! $this->email_blocked) {
+            return null;
+        }
+
+        return $this->sentMessages
+            ->whereIn('status', [SentMessage::STATUS_BOUNCE, SentMessage::STATUS_COMPLAINT])
+            ->sortByDesc('created_at')
+            ->first()?->status;
+    }
 }

@@ -31,6 +31,7 @@ class VoterListFull extends JsonResource
             'stats' => [
                 'voters'                => count($this->voters),
                 'voters_email_verified' => $this->voters->whereNotNull('email_verified')->count(),
+                'voters_blocked'        => $this->voters->where('email_blocked', true)->count(),
                 'sentMessages'          => count($this->sentMessages),
             ]
         ];

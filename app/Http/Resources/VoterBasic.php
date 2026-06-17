@@ -24,6 +24,8 @@ class VoterBasic extends JsonResource
             'title'          => $this->title,
             'email'          => $this->email,
             'email_verified' => $this->email_verified,
+            'email_blocked'  => (bool) $this->email_blocked,
+            'blocked_reason' => $this->blockedReason(),
             'phone'          => $this->phone,
             'phone_verified' => $this->phone_verified,
             'created_at'     => $this->created_at,
