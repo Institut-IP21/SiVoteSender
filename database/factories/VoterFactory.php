@@ -7,6 +7,9 @@ use App\Models\SentMessage;
 use App\Models\Voter;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<Voter>
+ */
 class VoterFactory extends Factory
 {
     /**

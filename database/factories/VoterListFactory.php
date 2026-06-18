@@ -5,6 +5,9 @@ namespace Database\Factories;
 use App\Models\VoterList;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<VoterList>
+ */
 class VoterListFactory extends Factory
 {
     /**
