@@ -31,6 +31,7 @@ Route::middleware('api')->prefix('owner')->group(function () {
 
 Route::middleware('api')->prefix('messages')->group(function () {
     Route::get('/batch/{batchId}/stats', [SentMessageController::class, 'batchStats'])->name('sentMessage.batch.stats');
+    Route::get('/batch/{batchId}/undeliverable', [SentMessageController::class, 'batchUndeliverable'])->name('sentMessage.batch.undeliverable');
     Route::get('/{sentMessage}', [SentMessageController::class, 'show'])->name('sentMessage.show')->middleware('can:view,sentMessage');
 });
 

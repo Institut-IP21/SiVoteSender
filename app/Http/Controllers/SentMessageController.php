@@ -41,4 +41,38 @@ class SentMessageController extends Controller
             ]
         );
     }
+
+    public function batchUndeliverable(string $batchId): JsonResponse
+    {
+        $messages = SentMessage::query()
+            ->batch($batchId)
+            ->whereIn('status', [
+                SentMessage::STATUS_BOUNCE,
+                SentMessage::STATUS_BOUNCE_SOFT,
+                SentMessage::STATUS_COMPLAINT,
+            ])
+            ->with('voter')
+            ->get();
+
+        if ($messages->isEmpty()) {
+            // Owner can't be checked without a row; an empty batch is simply "none".
+            return $this->basicResponse(200, ['data' => []]);
+        }
+
+        /** @var SentMessage $first */
+        $first = $messages->first();
+        /** @var VoterList $voterList */
+        $voterList = $first->voterList;
+        abort_if($this->checkOwner($voterList->owner), 403);
+
+        $data = $messages->map(fn (SentMessage $m): array => [
+            'voter_id'   => $m->voter_id,
+            'email'      => $m->voter->email,
+            'name'       => $m->voter->title,
+            'status'     => $m->status,
+            'status_msg' => $m->status_msg,
+        ])->values()->all();
+
+        return $this->basicResponse(200, ['data' => $data]);
+    }
 }
