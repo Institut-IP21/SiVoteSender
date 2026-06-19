@@ -90,8 +90,9 @@ class DemoSeeder extends Seeder
     /**
      * Seed named "undeliverable" invites for ballots flagged with `undeliverable` in the
      * manifest, so the Monitor screen's delivery panel has real bounced rows to show. The
-     * real send path keys a batch by the ballot id, so we set batch_uuid = ballot id and
-     * mark a few of the election's voters bounced/soft-bounced/complaint. Only sender-managed
+     * real send path keys the invite batch by `invite_batch` (a UUID the web_app seeder
+     * derives from the ballot id and carries in the manifest), so we set batch_uuid to that
+     * and mark a few of the election's voters bounced/soft-bounced/complaint. Only sender-managed
      * elections have delivery data (self-managed lists distribute codes themselves).
      *
      * @param  array<int,array<string,mixed>>  $elections
@@ -129,7 +130,7 @@ class DemoSeeder extends Seeder
                     SentMessage::factory()->notSuccessful()->create([
                         'voter_id' => $voterId,
                         'voterlist_id' => $listId,
-                        'batch_uuid' => (string) $ballot['id'],
+                        'batch_uuid' => (string) ($ballot['invite_batch'] ?? $ballot['id']),
                         'status' => $status,
                         'status_msg' => $reasons[$status],
                     ]);
