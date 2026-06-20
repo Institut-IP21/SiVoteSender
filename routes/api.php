@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BallotPreviewController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\SentMessageController;
 use App\Http\Controllers\VerificationApiController;
@@ -27,6 +28,11 @@ Route::fallback(function () {
 
 Route::middleware('api')->prefix('owner')->group(function () {
     Route::post('/personalization', [OwnerController::class, 'updatePersonalization'])->name('owner.personalization');
+});
+
+Route::middleware('api')->prefix('ballot')->group(function () {
+    // Renders the invite mailable to HTML for an exact app-side preview (no send).
+    Route::post('/invite-preview', [BallotPreviewController::class, 'invite'])->name('ballot.invite.preview');
 });
 
 Route::middleware('api')->prefix('messages')->group(function () {
