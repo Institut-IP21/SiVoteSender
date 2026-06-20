@@ -36,7 +36,7 @@ class VoterListApiController extends Controller
             'size' =>
             'integer',
             'sort_by' =>
-            'string|in:id,owner,title|required_with:sort_direction',
+            'string|in:id,owner,title,created_at|required_with:sort_direction',
             'sort_direction' =>
             'in:desc,asc|required_with:sort_by',
         ];
