@@ -176,15 +176,15 @@ class VerificationTest extends TestCase
 
         $response->assertSuccessful();
 
-        Mail::assertQueued(MailVerification::class, 2);
+        Mail::assertSent(MailVerification::class, 2);
 
-        Mail::assertQueued(
+        Mail::assertSent(
             MailVerification::class,
             fn($mail) => $mail->hasTo('admin1@example.org')
                 || $mail->hasTo('admin2@example.org')
         );
 
-        Mail::assertQueued(
+        Mail::assertSent(
             MailVerification::class,
             fn($mail) => $mail->subject == 'Subject'
                 && $mail->template == 'Template'
@@ -224,11 +224,11 @@ class VerificationTest extends TestCase
 
         $response->assertSuccessful();
 
-        Mail::assertQueued(MailVerification::class, 15);
+        Mail::assertSent(MailVerification::class, 15);
 
         $link = null;
         $email = null;
-        Mail::assertQueued(
+        Mail::assertSent(
             MailVerification::class,
             function ($mail) use (&$link, &$email): bool {
                 $link = $mail->url;
@@ -282,7 +282,7 @@ class VerificationTest extends TestCase
 
         $response->assertSuccessful();
 
-        Mail::assertQueued(MailVerification::class, 4);
+        Mail::assertSent(MailVerification::class, 4);
     }
 
     public function testRealStartForSingleVoterVerification(): void
@@ -313,10 +313,10 @@ class VerificationTest extends TestCase
 
         $response->assertSuccessful();
 
-        Mail::assertQueued(MailVerification::class, 1);
+        Mail::assertSent(MailVerification::class, 1);
 
         $link = null;
-        Mail::assertQueued(
+        Mail::assertSent(
             MailVerification::class,
             function ($mail) use (&$link, &$email): bool {
                 $link = $mail->url;

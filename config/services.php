@@ -28,6 +28,10 @@ return [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+
+        // Max send rate (messages/second) the mail queue is paced under. Set to
+        // your actual SES "Max send rate".
+        'rate_per_second' => (int) env('SES_MAX_SEND_RATE', 14),
     ],
 
     'sns' => [

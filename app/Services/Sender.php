@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendVoterEmail;
 use App\Models\VoterList;
 use App\Models\GlobalEmailBlockList;
 use App\Models\SentMessage;
@@ -10,7 +11,6 @@ use App\Models\Voter;
 
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class Sender
 {
@@ -38,9 +38,9 @@ class Sender
 
         /** @var string $voterEmail */
         $voterEmail = $voter->email;
-        $result = $this->checkAndSend($voterEmail, $mailable);
 
-        Log::info('Sent message', ['to' => $voter->id, 'type' => $mailable::class]);
+        // Record first so the queued send can mark it failed if it gives up.
+        $onBlocklist = $this->isBlocklisted($voterEmail);
 
         $sentMessage = SentMessage::create(
             [
@@ -50,31 +50,54 @@ class Sender
                 'batch_uuid'      => $batch,
                 'verification_id' => $verification,
                 'successful'      => false,
-                'status'          => $result ? SentMessage::STATUS_SENT : SentMessage::STATUS_BLOCKED
+                'status'          => $onBlocklist ? SentMessage::STATUS_BLOCKED : SentMessage::STATUS_SENT
             ]
         );
+
+        if ($onBlocklist) {
+            Log::warning('Trying to send to blocked email address', [$voterEmail]);
+            return $sentMessage;
+        }
+
+        SendVoterEmail::dispatch($voterEmail, $mailable, $sentMessage->id);
+
+        Log::info('Queued message', ['to' => $voter->id, 'type' => $mailable::class]);
 
         return $sentMessage;
     }
 
     public function sendTestEmail(string $to, Mailable $mailable): bool
     {
-        $result = $this->checkAndSend($to, $mailable);
+        $queued = $this->checkAndSend($to, $mailable);
 
-        Log::info('Sent test message', ['to' => $to, 'type' => $mailable::class]);
+        Log::info('Sent test message', ['to' => $to, 'type' => $mailable::class, 'queued' => $queued]);
+
+        return $queued;
+    }
+
+    /**
+     * Dispatch a fault-tolerant send unless the recipient is globally blocked.
+     * Returns false when blocked, true when the send was queued. Used by the
+     * untracked test-email path; the tracked voter path (sendEmail) dispatches
+     * directly so it can link the SentMessage it just created.
+     */
+    public function checkAndSend(string $to, Mailable $mailable): bool
+    {
+        if ($this->isBlocklisted($to)) {
+            Log::warning('Trying to send to blocked email address', [$to]);
+            return false;
+        }
+
+        SendVoterEmail::dispatch($to, $mailable);
 
         return true;
     }
 
-    public function checkAndSend(string $to, Mailable $mailable): mixed
+    /**
+     * On the global (bounce/complaint) block list? Used by both send paths.
+     */
+    public function isBlocklisted(string $email): bool
     {
-        $blocked = GlobalEmailBlockList::where('email', $to)->first();
-
-        if ($blocked) {
-            Log::warning('Trying to send to blocked email address', [$blocked->email]);
-            return false;
-        }
-
-        return Mail::to($to)->queue($mailable);
+        return GlobalEmailBlockList::where('email', $email)->exists();
     }
 }

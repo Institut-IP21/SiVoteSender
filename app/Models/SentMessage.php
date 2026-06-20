@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $successful
  * @property string $status
  * @property string|null $status_msg
+ * @property Carbon|null $failed_at
  * @property Carbon|null $deleted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -85,7 +86,8 @@ class SentMessage extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'successful' => 'boolean'
+        'successful' => 'boolean',
+        'failed_at'  => 'datetime',
     ];
 
     /**
@@ -101,7 +103,8 @@ class SentMessage extends Model
         'verification_id',
         'successful',
         'status',
-        'status_msg'
+        'status_msg',
+        'failed_at'
     ];
 
     /**
