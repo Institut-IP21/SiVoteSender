@@ -7,7 +7,7 @@
                         <table border="0" cellpadding="0" cellspacing="0" role="presentation">
                             <tr>
                                 <td>
-                                    <a href="{{ $url }}" class="button button-{{ $color ?? 'primary' }}"@if (!empty($brandColor)) style="background-color: {{ $brandColor }}; color: {{ \App\Support\BrandContrast::foreground($brandColor) }}; border-top-color: {{ $brandColor }}; border-bottom-color: {{ $brandColor }}; border-left-color: {{ $brandColor }}; border-right-color: {{ $brandColor }};"@endif
+                                    <a href="{{ $url }}" class="button button-{{ $color ?? 'primary' }}"@if (!empty($brandColor)) style="background-color: {{ $brandColor }}; color: {{ \App\Support\BrandPalette::fromHex($brandColor)?->foreground() }}; border-top-color: {{ $brandColor }}; border-bottom-color: {{ $brandColor }}; border-left-color: {{ $brandColor }}; border-right-color: {{ $brandColor }};"@endif
                                         target="_blank" rel="noopener">{{ $slot }}</a>
                                 </td>
                             </tr>
