@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $owner
  * @property string|null $photo_url
+ * @property string|null $brand_color
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @method static Builder<static>|Personalization newModelQuery()
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder<static>|Personalization whereId($value)
  * @method static Builder<static>|Personalization whereOwner($value)
  * @method static Builder<static>|Personalization wherePhotoUrl($value)
+ * @method static Builder<static>|Personalization whereBrandColor($value)
  * @method static Builder<static>|Personalization whereUpdatedAt($value)
  * @mixin \Eloquent
  */
@@ -39,7 +41,8 @@ class Personalization extends Model
      */
     protected $fillable = [
         'owner',
-        'photo_url'
+        'photo_url',
+        'brand_color',
     ];
 
     //
