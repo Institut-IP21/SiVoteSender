@@ -55,6 +55,7 @@ Route::middleware('api')->prefix('verification')->group(function () {
 
 Route::middleware('api')->prefix('voter')->group(function () {
     Route::get('/{voter}', [VoterController::class, 'show'])->name('voter.show')->middleware('can:view,voter');
+    Route::post('/{voter}', [VoterController::class, 'update'])->name('voter.update')->middleware('can:update,voter');
     Route::delete('/{voter}', [VoterController::class, 'delete'])->name('voter.remove')->middleware('can:delete,voter');
 });
 
