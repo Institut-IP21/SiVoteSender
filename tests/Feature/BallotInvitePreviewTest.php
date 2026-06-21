@@ -92,8 +92,10 @@ class BallotInvitePreviewTest extends TestCase
         // and escapes the tag. Guard that regression here.
         $this->assertStringNotContainsString('&lt;a href="https://engine', $html);
         $this->assertMatchesRegularExpression('/<a [^>]*class="[^"]*button[^"]*"/', $html);
-        // ...carrying the org brand colour inline (overriding the theme default).
+        // ...carrying the org brand colour inline (overriding the theme default)...
         $this->assertStringContainsString('background-color: #ff0000', $html);
+        // ...with an adaptive, readable text colour (red is dark enough for dark ink).
+        $this->assertStringContainsString('color: #11161a', $html);
     }
 
     public function test_button_is_real_html_without_a_brand_colour(): void
