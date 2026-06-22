@@ -33,6 +33,8 @@ Route::middleware('api')->prefix('owner')->group(function () {
 Route::middleware('api')->prefix('ballot')->group(function () {
     // Renders the invite mailable to HTML for an exact app-side preview (no send).
     Route::post('/invite-preview', [BallotPreviewController::class, 'invite'])->name('ballot.invite.preview');
+    // Same, for the results mailable.
+    Route::post('/result-preview', [BallotPreviewController::class, 'result'])->name('ballot.result.preview');
 });
 
 Route::middleware('api')->prefix('messages')->group(function () {

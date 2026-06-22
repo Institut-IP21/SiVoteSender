@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\BallotInvite;
+use App\Mail\BallotResult;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -36,6 +37,33 @@ class BallotPreviewController extends Controller
             $validated['url'],
             $validated['template'],
             $validated['subject'],
+            $validated['locale'] ?? null,
+        );
+
+        return response($mailable->render(), 200, ['Content-Type' => 'text/html']);
+    }
+
+    /**
+     * Render the REAL results mailable to HTML for an exact app-side preview — same
+     * Mailable, Markdown template, chrome and owner personalization as a live send.
+     * The CSV attachment isn't part of the HTML body, so a tiny sample stands in.
+     *
+     * Nothing is sent or persisted; this only renders.
+     */
+    public function result(Request $request): Response
+    {
+        $validated = $request->validate([
+            'template' => 'required|string',
+            'subject' => 'required|string',
+            'resultLink' => 'required|string',
+            'locale' => 'nullable|string',
+        ]);
+
+        $mailable = new BallotResult(
+            $validated['template'],
+            $validated['subject'],
+            "option,votes\n",
+            $validated['resultLink'],
             $validated['locale'] ?? null,
         );
 
