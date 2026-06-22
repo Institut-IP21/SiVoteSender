@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminStatsController;
 use App\Http\Controllers\BallotPreviewController;
 use App\Http\Controllers\DeliverabilityController;
 use App\Http\Controllers\OwnerController;
@@ -46,6 +47,7 @@ Route::middleware('api')->prefix('admin')->group(function () {
     Route::delete('/deliverability/block-list', [DeliverabilityController::class, 'removeBlock'])->name('admin.deliverability.blocklist.remove');
     Route::get('/deliverability/send-failures', [DeliverabilityController::class, 'sendFailures'])->name('admin.deliverability.failures');
     Route::get('/deliverability/stats', [DeliverabilityController::class, 'stats'])->name('admin.deliverability.stats');
+    Route::get('/stats', [AdminStatsController::class, 'stats'])->name('admin.stats');
 });
 
 Route::middleware('api')->prefix('messages')->group(function () {
