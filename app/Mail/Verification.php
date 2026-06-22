@@ -23,7 +23,7 @@ class Verification extends Mailable
      *
      * @return void
      */
-    public function __construct(?ModelsVerification $verification, string $url, ?string $subject = null, ?string $template = null)
+    public function __construct(?ModelsVerification $verification, string $url, ?string $subject = null, ?string $template = null, ?string $locale = null)
     {
         if ($verification) {
             $this->subject  = $verification->subject ?? (string) __('emails.verification.subject');
@@ -36,6 +36,12 @@ class Verification extends Mailable
         /** @var ApiUser $user */
         $user = \Auth::user();
         $this->personalization = $user->personalization;
+
+        // Render the auto-appended button label in the same locale the body and
+        // subject were composed in, instead of the sender service default.
+        if (!empty($locale)) {
+            $this->locale($locale);
+        }
     }
 
     /**

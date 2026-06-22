@@ -37,6 +37,8 @@ Route::middleware('api')->prefix('ballot')->group(function () {
     Route::post('/invite-preview', [BallotPreviewController::class, 'invite'])->name('ballot.invite.preview');
     // Same, for the results mailable.
     Route::post('/result-preview', [BallotPreviewController::class, 'result'])->name('ballot.result.preview');
+    // Same, for the voter-verification mailable.
+    Route::post('/verification-preview', [BallotPreviewController::class, 'verification'])->name('ballot.verification.preview');
 });
 
 // Platform-wide deliverability for the operator panel (global tables + cross-owner

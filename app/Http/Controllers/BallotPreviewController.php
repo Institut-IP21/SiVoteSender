@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\BallotInvite;
 use App\Mail\BallotResult;
+use App\Mail\Verification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -64,6 +65,38 @@ class BallotPreviewController extends Controller
             $validated['subject'],
             "option,votes\n",
             $validated['resultLink'],
+            $validated['locale'] ?? null,
+        );
+
+        return response($mailable->render(), 200, ['Content-Type' => 'text/html']);
+    }
+
+    /**
+     * Render the REAL voter-verification mailable to HTML for an exact app-side
+     * preview — same Mailable, Markdown template, header/footer chrome, the appended
+     * "Verify now" button and the authenticated owner's personalization as a live
+     * send. The given sample confirm URL stands in for the per-voter signed link, so
+     * %%LINK%% substitution is shown exactly as recipients see it.
+     *
+     * Nothing is sent or persisted; this only renders.
+     */
+    public function verification(Request $request): Response
+    {
+        $validated = $request->validate([
+            'template' => 'required|string',
+            'subject' => 'required|string',
+            'url' => 'required|string',
+            'locale' => 'nullable|string',
+        ]);
+
+        // Identical construction to the real send path (App\Services\Verification),
+        // minus a persisted model: the explicit subject/template branch substitutes
+        // %%LINK%% and resolves personalization from the authenticated ApiUser.
+        $mailable = new Verification(
+            null,
+            $validated['url'],
+            $validated['subject'],
+            $validated['template'],
             $validated['locale'] ?? null,
         );
 
