@@ -39,3 +39,5 @@ Bugs fixed during the upgrade (surfaced by phpstan / review) — be aware these 
 ## State / cutover
 
 **As of the 2026-06-13 cutover this is `master`** — the integrated Laravel 13 work (DB queue, our security overlay). The old `upgrade/laravel-12` branch + PR **SiVoteSender#4**, the partial **9→10 stash**, and any `feature/laravel-upgrade-12` stub are merged/superseded — ignore them. Pre-cutover state is on tag `master-pre-integration-2026-06-13`. See the superproject `CLAUDE.md` for the full story.
+
+**2026-06-22 feature cutover** (fast-forward onto `master`): branded-email work — the **results-email preview** endpoint (`POST /api/ballot/result-preview`, mirrors `invite-preview`) and the `BallotResult` button now honors the owner brand colour like the invite. Pre-flip tag `master-pre-wizard-merge-2026-06-20`; the `feature/ballot-dashboard`/`integration/*` branches were deleted (all in `master`).
