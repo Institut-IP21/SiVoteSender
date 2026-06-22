@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\EmailSendFailure;
+use App\Models\GlobalEmailBlockList;
 use App\Models\SentMessage;
 use App\Models\Voter;
 use App\Models\VoterList;
@@ -44,6 +46,7 @@ class DemoSeeder extends Seeder
         }
 
         $this->seedUndeliverable($manifest['elections'] ?? [], $listVoters);
+        $this->seedSendFailures();
 
         $this->command->info('Sender demo data seeded for team ' . $owner . '.');
     }
@@ -121,6 +124,8 @@ class DemoSeeder extends Seeder
                     continue;
                 }
 
+                $batch = (string) ($ballot['invite_batch'] ?? $ballot['id']);
+
                 // Land the bounces on the tail of the list (most likely unverified) so a
                 // bounced voter isn't also shown as email-verified.
                 $pick = array_values(array_slice($voters, -min($count, count($voters))));
@@ -130,18 +135,66 @@ class DemoSeeder extends Seeder
                     SentMessage::factory()->notSuccessful()->create([
                         'voter_id' => $voterId,
                         'voterlist_id' => $listId,
-                        'batch_uuid' => (string) ($ballot['invite_batch'] ?? $ballot['id']),
+                        'batch_uuid' => $batch,
                         'status' => $status,
                         'status_msg' => $reasons[$status],
                     ]);
 
-                    // Hard bounces & complaints block the address (mirrors the SNS webhook);
-                    // soft bounces are transient and leave the voter deliverable.
+                    // Hard bounces & complaints block the address AND land on the global
+                    // suppression list (mirrors the SNS webhook); soft bounces are transient
+                    // and leave the voter deliverable.
                     if ($status !== SentMessage::STATUS_BOUNCE_SOFT) {
                         Voter::whereKey($voterId)->update(['email_blocked' => true]);
+
+                        $voter = Voter::find($voterId);
+                        if ($voter !== null) {
+                            GlobalEmailBlockList::query()->firstOrCreate(
+                                ['email' => $voter->email],
+                                [
+                                    'status' => $status === SentMessage::STATUS_COMPLAINT
+                                        ? GlobalEmailBlockList::STATUS_COMPLAINT
+                                        : GlobalEmailBlockList::STATUS_BOUNCE,
+                                    'status_msg' => $reasons[$status],
+                                ],
+                            );
+                        }
                     }
                 }
+
+                // The rest of the electorate got their invite delivered — so the platform
+                // deliverability stats show a realistic mostly-delivered mix, not only failures.
+                foreach (array_values(array_diff($voters, $pick)) as $voterId) {
+                    SentMessage::factory()->create([
+                        'voter_id' => $voterId,
+                        'voterlist_id' => $listId,
+                        'batch_uuid' => $batch,
+                        'status' => SentMessage::STATUS_DELIVERED,
+                    ]);
+                }
             }
+        }
+    }
+
+    /**
+     * A few retry-exhausted outbound emails so the operator panel's send-failure feed
+     * has rows. These are a global, owner-agnostic table (jobs that gave up after all
+     * retries), so they're seeded as standalone samples rather than per-list.
+     */
+    private function seedSendFailures(): void
+    {
+        $samples = [
+            ['recipient' => 'full.mailbox@example.org', 'error' => '452 4.2.2 Mailbox full', 'attempts' => 8],
+            ['recipient' => 'greylisted@example.net', 'error' => '451 4.7.1 Greylisted, try again later', 'attempts' => 8],
+            ['recipient' => 'timeout@example.com', 'error' => 'Connection to SMTP host timed out', 'attempts' => 8],
+        ];
+
+        foreach ($samples as $sample) {
+            EmailSendFailure::query()->create([
+                'recipient' => $sample['recipient'],
+                'mailable'  => 'App\\Mail\\BallotInvite',
+                'error'     => $sample['error'],
+                'attempts'  => $sample['attempts'],
+            ]);
         }
     }
 }

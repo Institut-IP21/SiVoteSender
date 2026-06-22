@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BallotPreviewController;
+use App\Http\Controllers\DeliverabilityController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\SentMessageController;
 use App\Http\Controllers\VerificationApiController;
@@ -35,6 +36,16 @@ Route::middleware('api')->prefix('ballot')->group(function () {
     Route::post('/invite-preview', [BallotPreviewController::class, 'invite'])->name('ballot.invite.preview');
     // Same, for the results mailable.
     Route::post('/result-preview', [BallotPreviewController::class, 'result'])->name('ballot.result.preview');
+});
+
+// Platform-wide deliverability for the operator panel (global tables + cross-owner
+// aggregate). Behind shared-token ApiAuth; web_app is the only caller and gates
+// operator access on its side. See DeliverabilityController.
+Route::middleware('api')->prefix('admin')->group(function () {
+    Route::get('/deliverability/block-list', [DeliverabilityController::class, 'blockList'])->name('admin.deliverability.blocklist');
+    Route::delete('/deliverability/block-list', [DeliverabilityController::class, 'removeBlock'])->name('admin.deliverability.blocklist.remove');
+    Route::get('/deliverability/send-failures', [DeliverabilityController::class, 'sendFailures'])->name('admin.deliverability.failures');
+    Route::get('/deliverability/stats', [DeliverabilityController::class, 'stats'])->name('admin.deliverability.stats');
 });
 
 Route::middleware('api')->prefix('messages')->group(function () {
