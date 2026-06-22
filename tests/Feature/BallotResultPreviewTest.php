@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Personalization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -43,6 +44,30 @@ class BallotResultPreviewTest extends TestCase
         // The auto-appended "view results" button points at the results link.
         $this->assertStringContainsString('https://engine.test/election/E/ballot/B/result', $html);
         $this->assertStringContainsString(__('emails.result.link', [], 'en'), $html);
+    }
+
+    public function test_uses_the_owner_brand_colour_on_the_action_button(): void
+    {
+        $owner = fake()->uuid();
+        Personalization::create([
+            'owner' => $owner,
+            'photo_url' => 'https://cdn.test/logo.png',
+            'brand_color' => '#ff0000',
+        ]);
+
+        $res = $this->postJson('/api/ballot/result-preview', $this->payload(), [
+            'Authorization' => $this->token,
+            'Owner' => $owner,
+        ]);
+
+        $res->assertOk();
+        $html = (string) $res->getContent();
+
+        // The results button must carry the org brand colour inline (same as the
+        // invite button), with an adaptive readable text colour.
+        $this->assertMatchesRegularExpression('/<a [^>]*class="[^"]*button[^"]*"/', $html);
+        $this->assertStringContainsString('background-color: #ff0000', $html);
+        $this->assertStringContainsString('color: #11161a', $html);
     }
 
     public function test_requires_authorization(): void
