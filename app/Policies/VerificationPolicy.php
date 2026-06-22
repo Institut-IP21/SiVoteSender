@@ -12,6 +12,16 @@ class VerificationPolicy
     use HandlesAuthorization;
 
     /**
+     * Determine whether the user can list verifications. Allowed for any API user;
+     * the listing query itself is owner-scoped (VerificationApiController::list
+     * filters `whereHas('voterlist', owner = getOwner())`). Mirrors VoterListPolicy.
+     */
+    public function viewAny(User $user): Response|bool
+    {
+        return true;
+    }
+
+    /**
      * Determine whether the user can create the model.
      *
      * @param  \App\Models\ApiUser  $user

@@ -87,6 +87,26 @@ class VerificationTest extends TestCase
         $response->assertUnauthorized();
     }
 
+    public function testListVerifications(): void
+    {
+        // Regression: the list route is gated by `can:viewAny,Verification`; without a
+        // viewAny policy method it 403'd. It must return 200 and be owner-scoped.
+        $voterlistId = $this->createVoterList();
+        $this->createVerification($voterlistId);
+
+        // Another owner's verification must not appear.
+        $otherList = VoterList::factory()->create(['owner' => 'b3d99f7b-1111-4080-80f0-fe40f596c051']);
+        Verification::factory()->create(['voterlist_id' => $otherList->id]);
+
+        $response = $this->withHeaders([
+            'Authorization' => $this->token,
+            'Owner' => $this->owner,
+        ])->getJson('/api/verification/');
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+    }
+
     //
     //
     //
