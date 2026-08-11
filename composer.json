@@ -16,6 +16,7 @@
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
+        "sentry/sentry-laravel": "^4.27",
         "vlucas/phpdotenv": "^5.3"
     },
     "require-dev": {
