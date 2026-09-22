@@ -11,15 +11,9 @@ use Illuminate\Support\Facades\Log;
 class VerifySnsMessage
 {
     /**
-     * Verify the request is a genuine, cryptographically-signed AWS SNS message
-     * before any handler is allowed to act on it. When SNS_TOPIC_ARNS is set, the
-     * message must also originate from an allowlisted topic. The signature check is
-     * the authentication for this externally-called webhook (AWS cannot send the
-     * app's own API token / Owner header).
+     * Fails closed on an empty allowlist: a valid AWS signature only proves *some* AWS account, not a topic we own.
      *
      * @param Request $request
-     * @param  \Closure  $next
-     * @return mixed
      */
     public function handle($request, Closure $next)
     {
@@ -30,22 +24,23 @@ class VerifySnsMessage
             return response('Invalid SNS message.', 403);
         }
 
-        $validator = new MessageValidator();
-        if (!$validator->isValid($message)) {
-            Log::warning('SNS webhook rejected: invalid signature');
-            return response('Invalid SNS signature.', 403);
-        }
-
         $allowedArns = (array) config('services.sns.topic_arns', []);
         $topicArn = $message->offsetExists('TopicArn') ? (string) $message['TopicArn'] : '';
 
-        if ($allowedArns !== []) {
-            if (!in_array($topicArn, $allowedArns, true)) {
-                Log::warning('SNS webhook rejected: TopicArn not allowlisted', ['topic_arn' => $topicArn]);
-                return response('Unrecognized SNS topic.', 403);
-            }
-        } else {
-            Log::warning('SNS webhook: SNS_TOPIC_ARNS not configured; accepting any validly-signed SNS topic.');
+        if ($allowedArns === []) {
+            Log::warning('SNS webhook rejected: SNS_TOPIC_ARNS is not configured (fail closed).');
+            return response('SNS topic allowlist not configured.', 403);
+        }
+
+        if (!in_array($topicArn, $allowedArns, true)) {
+            Log::warning('SNS webhook rejected: TopicArn not allowlisted', ['topic_arn' => $topicArn]);
+            return response('Unrecognized SNS topic.', 403);
+        }
+
+        $validator = app(MessageValidator::class);
+        if (!$validator->isValid($message)) {
+            Log::warning('SNS webhook rejected: invalid signature');
+            return response('Invalid SNS signature.', 403);
         }
 
         return $next($request);

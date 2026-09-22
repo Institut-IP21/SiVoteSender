@@ -39,7 +39,6 @@ class Sender
         /** @var string $voterEmail */
         $voterEmail = $voter->email;
 
-        // Record first so the queued send can mark it failed if it gives up.
         $onBlocklist = $this->isBlocklisted($voterEmail);
 
         $sentMessage = SentMessage::create(
@@ -55,7 +54,7 @@ class Sender
         );
 
         if ($onBlocklist) {
-            Log::warning('Trying to send to blocked email address', [$voterEmail]);
+            Log::warning('Trying to send to blocked email address', ['voter' => $voter->id]);
             return $sentMessage;
         }
 
@@ -70,21 +69,15 @@ class Sender
     {
         $queued = $this->checkAndSend($to, $mailable);
 
-        Log::info('Sent test message', ['to' => $to, 'type' => $mailable::class, 'queued' => $queued]);
+        Log::info('Sent test message', ['type' => $mailable::class, 'queued' => $queued]);
 
         return $queued;
     }
 
-    /**
-     * Dispatch a fault-tolerant send unless the recipient is globally blocked.
-     * Returns false when blocked, true when the send was queued. Used by the
-     * untracked test-email path; the tracked voter path (sendEmail) dispatches
-     * directly so it can link the SentMessage it just created.
-     */
     public function checkAndSend(string $to, Mailable $mailable): bool
     {
         if ($this->isBlocklisted($to)) {
-            Log::warning('Trying to send to blocked email address', [$to]);
+            Log::warning('Trying to send to blocked email address (test path)');
             return false;
         }
 
@@ -93,9 +86,6 @@ class Sender
         return true;
     }
 
-    /**
-     * On the global (bounce/complaint) block list? Used by both send paths.
-     */
     public function isBlocklisted(string $email): bool
     {
         return GlobalEmailBlockList::where('email', $email)->exists();

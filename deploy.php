@@ -50,6 +50,7 @@ task('deploy', [
     'deploy:vendors',
     'artisan:storage:link',
     'artisan:evote:cache',
+    'secure:config-cache',
     'artisan:migrate',
     'deploy:publish',
 ]);
@@ -72,6 +73,11 @@ task('artisan:model:scan', function () {
 task('artisan:evote:cache', function () {
     cd('{{release_or_current_path}}');
     echo run('php artisan evote:cache');
+});
+
+task('secure:config-cache', function () {
+    $f = '{{release_path}}/bootstrap/cache/config.php';
+    run("if [ -f $f ]; then chgrp {{http_user}} $f && chmod 640 $f || echo 'WARNING: config cache left unrestricted'; fi");
 });
 
 after('deploy:failed', 'deploy:unlock');

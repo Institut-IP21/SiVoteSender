@@ -35,9 +35,6 @@ return [
     ],
 
     'sns' => [
-        // Comma-separated allowlist of SNS Topic ARNs permitted to call the
-        // bounce/complaint webhook. Leave empty to accept any validly-signed
-        // SNS topic (a warning is logged). Set this in production.
         'topic_arns' => array_values(array_filter(array_map(
             'trim',
             explode(',', (string) env('SNS_TOPIC_ARNS', ''))

@@ -9,18 +9,23 @@ use Illuminate\Support\Facades\Auth;
 
 class ApiAuth
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param Request $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
+    /** @param Request $request */
     public function handle($request, Closure $next)
     {
         $auth = $request->header('Authorization');
 
-        if (!$auth || !in_array($auth, config('app.api.authlist'))) {
+        // hash_equals, not in_array: loose == coerces numeric tokens ("1e3" == "1000").
+        $valid = false;
+        if (is_string($auth) && $auth !== '') {
+            foreach ((array) config('app.api.authlist') as $token) {
+                if (is_string($token) && $token !== '' && hash_equals($token, $auth)) {
+                    $valid = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$valid) {
             return response(['error' => 'No authorization or invalid.'], 401);
         }
 

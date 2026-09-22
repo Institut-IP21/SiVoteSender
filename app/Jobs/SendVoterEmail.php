@@ -6,6 +6,7 @@ use App\Models\EmailSendFailure;
 use App\Models\SentMessage;
 use DateTimeInterface;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Mail\Mailable;
@@ -16,12 +17,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
-/**
- * Queued, fault-tolerant delivery of a single outbound e-mail: paced under the
- * SES rate limit, retried with backoff until a deadline, and recorded on final
- * failure (see {@see \App\Console\Commands\FlushEmailFailureAlerts}).
- */
-class SendVoterEmail implements ShouldQueue
+class SendVoterEmail implements ShouldQueue, ShouldBeEncrypted
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -39,12 +35,7 @@ class SendVoterEmail implements ShouldQueue
         $this->maxExceptions = (int) config('mail-alerts.max_exceptions', 8);
     }
 
-    /**
-     * Pace sends under the SES quota; over the limit the job is released back
-     * (not counted as an attempt) instead of provoking throttling.
-     *
-     * @return array<int, object>
-     */
+    /** @return array<int, object> */
     public function middleware(): array
     {
         return [new RateLimited('ses')];
@@ -69,10 +60,6 @@ class SendVoterEmail implements ShouldQueue
         Mail::to($this->to)->send($this->mailable);
     }
 
-    /**
-     * Reached only once retries are exhausted: record the permanent failure and
-     * mark the originating SentMessage.
-     */
     public function failed(Throwable $exception): void
     {
         $voterId = $this->sentMessageId !== null
@@ -89,7 +76,6 @@ class SendVoterEmail implements ShouldQueue
         ]);
 
         if ($this->sentMessageId !== null) {
-            // failed_at distinguishes a failed message from one still in flight.
             SentMessage::query()
                 ->whereKey($this->sentMessageId)
                 ->update([
@@ -99,9 +85,10 @@ class SendVoterEmail implements ShouldQueue
         }
 
         Log::error('Outbound e-mail permanently failed', [
-            'to'       => $this->to,
-            'mailable' => $this->mailable::class,
-            'error'    => $exception->getMessage(),
+            'sent_message_id' => $this->sentMessageId,
+            'voter_id'        => $voterId,
+            'mailable'        => $this->mailable::class,
+            'error'           => $exception->getMessage(),
         ]);
     }
 }

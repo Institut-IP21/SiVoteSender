@@ -14,22 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         then: function () {
-            // AWS SNS bounce/complaint webhook. Registered OUTSIDE the api group so it
-            // is NOT subject to ApiAuth (AWS cannot send the app's Authorization/Owner
-            // headers) — instead it is authenticated by the SNS message signature
-            // (sns.verify). Prefixed with 'api' to match the api group's URL space
-            // (routes/sns.php adds its own 'sns' prefix → api/sns/webhook).
+            // Outside the api group on purpose: AWS cannot send ApiAuth headers, the SNS signature is the auth.
             Route::prefix('api')
                 ->middleware(['throttle:sns', 'sns.verify'])
                 ->group(base_path('routes/sns.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // The app is only reached through the reverse proxy / load balancer, so trust
-        // forwarded headers to recover the real client IP. Without this, X-Forwarded-For
-        // is ignored and $request->ip() returns the proxy's IP for every request —
-        // collapsing per-IP rate limiters onto a single bucket.
-        $middleware->trustProxies(at: '*');
+        // Never '*': it lets any caller spoof X-Forwarded-For/-Host past the per-IP limiter.
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
 
         $middleware->alias([
             'auth.api' => \App\Http\Middleware\ApiAuth::class,
@@ -46,16 +39,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->booted(function () {
-        // AWS SNS bounce/complaint webhook. Requests are signature-verified, so this
-        // limiter only guards against forged-message floods; kept generous so a burst
-        // of genuine delivery notifications during a large send isn't throttled (429
-        // would otherwise trigger SNS retries/backoff and stale email-block state).
+        // Generous on purpose: a 429 on a genuine bounce burst makes SNS back off and leaves block state stale.
         RateLimiter::for('sns', function (Request $request) {
             return Limit::perMinute(300)->by($request->ip());
         });
 
-        // Paces outbound e-mail (App\Jobs\SendVoterEmail) under the SES send-rate
-        // quota; over the limit the job is released back instead of throttling.
         RateLimiter::for('ses', function () {
             $perSecond = (int) config('services.ses.rate_per_second', 14);
 

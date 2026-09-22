@@ -13,6 +13,7 @@ use App\Services\Ballot;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class VoterListApiController extends Controller
 {
@@ -160,28 +161,36 @@ class VoterListApiController extends Controller
     public function addVoters(Request $request, VoterList $voterlist): JsonResponse|VoterListFull
     {
         $params = $request->all();
-        $settings = [
-            'voters' =>
-            'required|json',
-            'voters.*.title' =>
-            'required|string',
-            'voters.*.email' =>
-            'sometimes|email',
-            'voters.*.phone' =>
-            'sometimes|string',
-        ];
 
-        if ($errors = $this->findErrors($params, $settings)) {
+        // `voters` arrives as a JSON string; `voters.*` rules silently match nothing until it is decoded.
+        if ($errors = $this->findErrors($params, ['voters' => 'required|json'])) {
             return $errors;
         }
 
-        $voters = json_decode((string) $params['voters']);
+        $decoded = json_decode((string) $params['voters'], true);
+
+        $validator = Validator::make(['voters' => $decoded], [
+            'voters'         => 'required|array|min:1',
+            'voters.*.title' => ['required', 'string', 'max:255', 'not_regex:/[\r\n]/'],
+            'voters.*.email' => ['nullable', 'email:rfc', 'max:255'],
+            'voters.*.phone' => ['nullable', 'string', 'max:255', 'not_regex:/[\r\n]/'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->basicResponse(422, [
+                'error'        => 'Request invalid.',
+                'field_errors' => $validator->errors(),
+            ]);
+        }
+
+        /** @var array<int, array<string, mixed>> $voters */
+        $voters = $validator->validated()['voters'];
         foreach ($voters as $voterData) {
             $voter = Voter::create(
                 [
-                    'title' => $voterData->title,
-                    'email' => $voterData->email ?? null,
-                    'phone' => $voterData->phone ?? null,
+                    'title' => $voterData['title'],
+                    'email' => $voterData['email'] ?? null,
+                    'phone' => $voterData['phone'] ?? null,
                 ]
             );
             $voterlist->voters()->attach($voter);
