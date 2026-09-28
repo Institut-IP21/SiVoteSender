@@ -80,4 +80,16 @@ task('secure:config-cache', function () {
     run("if [ -f $f ]; then chgrp {{http_user}} $f && chmod 640 $f || echo 'WARNING: config cache left unrestricted'; fi");
 });
 
+// Parity with web_app / web_engine: after the symlink flip, restart php-fpm so
+// workers drop the previous release's realpath/opcache. web_sender exposes no
+// @vite/hashed browser assets today (mail templates only), so it is not affected
+// by the asset-hash staleness bug that hit web_app; this is preventive/parity.
+// The sender box's deploy user does NOT (yet) have NOPASSWD sudo for this, so
+// the task warns instead of failing the deploy. Grant it via infra to activate.
+task('php-fpm:restart', function () {
+    run('if sudo -n /usr/bin/systemctl restart php-fpm 2>/dev/null; then echo "php-fpm restarted"; else echo "NOTE: php-fpm not restarted — deploy user lacks NOPASSWD sudo on this host"; fi');
+})->desc('Restart php-fpm after the symlink flip (no-op if sudo not granted)');
+
+after('deploy:symlink', 'php-fpm:restart');
+
 after('deploy:failed', 'deploy:unlock');
