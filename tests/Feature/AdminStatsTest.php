@@ -106,6 +106,36 @@ class AdminStatsTest extends TestCase
         $res->assertJsonPath('stats.voters_by_month.11.count', 4);
     }
 
+    public function test_admin_stats_counts_distinct_live_voters_per_owner(): void
+    {
+        $ownerA = fake()->uuid();
+        $ownerB = fake()->uuid();
+        $listA1 = VoterList::factory()->create(['owner' => $ownerA]);
+        $listA2 = VoterList::factory()->create(['owner' => $ownerA]);
+        $listB = VoterList::factory()->create(['owner' => $ownerB]);
+        $trashedList = VoterList::factory()->create(['owner' => $ownerB]);
+
+        $shared = Voter::factory()->create();
+        $listA1->voters()->attach($shared);
+        $listA2->voters()->attach($shared);
+        $listA1->voters()->attach(Voter::factory()->create());
+        $listB->voters()->attach(Voter::factory()->create());
+        $gone = Voter::factory()->create();
+        $listB->voters()->attach($gone);
+        $gone->delete();
+        $trashedList->voters()->attach(Voter::factory()->create());
+        $trashedList->delete();
+
+        $res = $this->getJson('/api/admin/stats', $this->authHeaders());
+
+        $res->assertOk();
+        $actual = (array) $res->json('stats.voters_by_owner');
+        ksort($actual);
+        $expected = [$ownerA => 2, $ownerB => 1];
+        ksort($expected);
+        $this->assertSame($expected, $actual);
+    }
+
     public function test_admin_stats_requires_authorization(): void
     {
         $this->getJson('/api/admin/stats', ['Owner' => fake()->uuid()])

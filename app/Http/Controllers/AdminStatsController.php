@@ -26,8 +26,32 @@ class AdminStatsController extends Controller
                 'voters_total'      => Voter::query()->count(),
                 'voter_lists_total' => VoterList::query()->count(),
                 'voters_by_month'   => $this->votersByMonth(),
+                'voters_by_owner'   => $this->votersByOwner(),
             ],
         ]);
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function votersByOwner(): array
+    {
+        $rows = DB::table('voterlist_voter')
+            ->join('voterlists', 'voterlists.id', '=', 'voterlist_voter.voterlist_id')
+            ->join('voters', 'voters.id', '=', 'voterlist_voter.voter_id')
+            ->whereNull('voterlists.deleted_at')
+            ->whereNull('voters.deleted_at')
+            ->groupBy('voterlists.owner')
+            ->select('voterlists.owner')
+            ->selectRaw('COUNT(DISTINCT voterlist_voter.voter_id) as voters')
+            ->get();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row->owner] = (int) $row->voters;
+        }
+
+        return $counts;
     }
 
     /**
