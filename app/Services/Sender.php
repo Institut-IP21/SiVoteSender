@@ -70,6 +70,9 @@ class Sender
     /** Rows per multi-row INSERT (sent_messages and jobs). Keeps each statement well under max_allowed_packet. */
     private const BULK_CHUNK = 500;
 
+    /** Approximate byte cap of the payloads in one jobs INSERT (max_allowed_packet is often 16 MB; leave generous headroom). */
+    private const BULK_MAX_BYTES = 4 * 1024 * 1024;
+
     /**
      * Record + queue one e-mail per voter in a constant number of queries (10,000 voters
      * well inside a web request). Same rules as {@see sendEmail()}, applied to a whole
@@ -162,7 +165,10 @@ class Sender
         if ($this->jobsShareDefaultConnection()) {
             // Multi-row INSERTs on the SAME connection as the surrounding transaction:
             // committed with it, discarded with it, so afterCommit holds by construction.
-            foreach (array_chunk($jobs, self::BULK_CHUNK) as $chunk) {
+            // Each payload can carry a large attachment (the results CSV), so size the chunk
+            // by bytes as well as rows. A single job always goes alone if it alone is bigger.
+            $perChunk = max(1, min(self::BULK_CHUNK, intdiv(self::BULK_MAX_BYTES, $this->estimateStoredSize($jobs[0]))));
+            foreach (array_chunk($jobs, $perChunk) as $chunk) {
                 Queue::connection()->bulk($chunk);
             }
 
@@ -172,6 +178,18 @@ class Sender
         foreach ($jobs as $job) {
             dispatch($job); // SendVoterEmail::$afterCommit = true
         }
+    }
+
+    /**
+     * Stored size of one job row: serialize + encrypt exactly as the queue does (the job is
+     * ShouldBeEncrypted), plus JSON/base64 and row overhead. Jobs in a batch differ only by
+     * recipient/code, so one sample stands for all (25% safety margin).
+     */
+    private function estimateStoredSize(SendVoterEmail $job): int
+    {
+        $encrypted = app('encrypter')->encrypt(serialize(clone $job));
+
+        return max(1, (int) ceil((strlen($encrypted) + 1024) * 1.25));
     }
 
     private function jobsShareDefaultConnection(): bool
