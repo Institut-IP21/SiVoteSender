@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\VoterFull;
 use App\Models\Voter;
+use App\Models\VoterList;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -46,9 +48,42 @@ class VoterController extends Controller
             $attributes['email_blocked'] = false;
         }
 
-        $voter->update($attributes);
+        // Two voters with the same address on one list would receive two voting codes.
+        // Lock this voter's list rows so a concurrent upload/edit cannot slip one in.
+        return DB::transaction(function () use ($voter, $params, $attributes): VoterFull|JsonResponse {
+            $listIds = $voter->voterLists()->pluck('voterlists.id');
+            VoterList::whereIn('id', $listIds)->orderBy('id')->lockForUpdate()->get();
 
-        return new VoterFull($voter->refresh());
+            $email = Voter::normalizeEmail($params['email'] ?? null);
+            if ($email !== null && $this->emailTakenOnSharedList($voter, $email, $listIds->all())) {
+                return response()->json([
+                    'message' => 'This email address is already used by another voter on the list.',
+                    'errors'  => ['email' => ['This email address is already used by another voter on the list.']],
+                ], 422);
+            }
+
+            $voter->update($attributes);
+
+            return new VoterFull($voter->refresh());
+        });
+    }
+
+    /**
+     * @param array<int, int> $listIds
+     */
+    private function emailTakenOnSharedList(Voter $voter, string $normalizedEmail, array $listIds): bool
+    {
+        if ($listIds === []) {
+            return false;
+        }
+
+        return Voter::query()
+            ->whereKeyNot($voter->id)
+            ->whereRaw('LOWER(TRIM(email)) = ?', [$normalizedEmail])
+            ->whereIn('id', function ($query) use ($listIds): void {
+                $query->select('voter_id')->from('voterlist_voter')->whereIn('voterlist_id', $listIds);
+            })
+            ->exists();
     }
 
     public function delete(Voter $voter): JsonResponse

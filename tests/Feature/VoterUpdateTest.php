@@ -76,4 +76,37 @@ class VoterUpdateTest extends TestCase
 
         $this->assertSame('Old', $voter->refresh()->title);
     }
+
+    public function test_email_of_another_voter_on_the_same_list_is_rejected_with_422(): void
+    {
+        $voter = $this->makeVoter($this->owner, ['email' => 'one@example.org']);
+        $other = Voter::create(['title' => 'Other', 'email' => 'taken@example.org']);
+        $voter->voterLists()->first()->voters()->attach($other->id);
+
+        $this->withHeaders(['Authorization' => $this->token, 'Owner' => $this->owner])
+            ->postJson('/api/voter/' . $voter->id, ['email' => 'TAKEN@example.org'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('email');
+
+        $this->assertSame('one@example.org', $voter->refresh()->email);
+    }
+
+    public function test_resaving_own_email_in_different_case_is_allowed(): void
+    {
+        $voter = $this->makeVoter($this->owner, ['email' => 'one@example.org']);
+
+        $this->withHeaders(['Authorization' => $this->token, 'Owner' => $this->owner])
+            ->postJson('/api/voter/' . $voter->id, ['email' => 'One@example.org'])
+            ->assertOk();
+    }
+
+    public function test_same_email_on_an_unrelated_list_is_allowed(): void
+    {
+        $voter = $this->makeVoter($this->owner, ['email' => 'one@example.org']);
+        $this->makeVoter($this->owner, ['email' => 'elsewhere@example.org']);
+
+        $this->withHeaders(['Authorization' => $this->token, 'Owner' => $this->owner])
+            ->postJson('/api/voter/' . $voter->id, ['email' => 'elsewhere@example.org'])
+            ->assertOk();
+    }
 }
