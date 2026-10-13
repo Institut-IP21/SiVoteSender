@@ -57,13 +57,25 @@ class VoterListApiController extends Controller
 
         try {
             $count = DB::transaction(function () use ($voterlist, $batch, $wait): int {
+                $previous = null;
                 if ($wait !== null && in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)) {
-                    // Session-scoped; applies to this request's connection only.
+                    // Session-scoped; restored below so a reused connection does not inherit it.
+                    $previous = (int) (DB::selectOne('SELECT @@SESSION.innodb_lock_wait_timeout AS v')->v ?? 50);
                     DB::statement('SET SESSION innodb_lock_wait_timeout = ' . $wait);
                 }
-                VoterList::whereKey($voterlist->id)->lockForUpdate()->first();
+                try {
+                    VoterList::whereKey($voterlist->id)->lockForUpdate()->first();
 
-                return SentMessage::where('voterlist_id', $voterlist->id)->where('batch_uuid', $batch)->count();
+                    return SentMessage::where('voterlist_id', $voterlist->id)->where('batch_uuid', $batch)->count();
+                } finally {
+                    if ($previous !== null) {
+                        try {
+                            DB::statement('SET SESSION innodb_lock_wait_timeout = ' . $previous);
+                        } catch (\Throwable) {
+                            // connection already unusable (deadlock/abort); nothing to restore
+                        }
+                    }
+                }
             });
         } catch (\Illuminate\Database\QueryException $e) {
             if (in_array((int) ($e->errorInfo[1] ?? 0), [1205, 1213], true)) { // lock wait timeout / deadlock
@@ -332,9 +344,15 @@ class VoterListApiController extends Controller
 
         // Only touch voters that actually belong to THIS list, so a caller who
         // owns one list cannot delete another owner's voters by passing foreign IDs.
-        $ownIds = $voterlist->voters()->whereIn('voters.id', $voters)->pluck('voters.id')->all();
-        $voterlist->voters()->detach($ownIds);
-        Voter::destroy($ownIds);
+        // Lock the list row FIRST (same order as addVoters / lockedSend): the voter delete
+        // cascades into sent_messages, whose touches need the list row, so taking the voter
+        // rows first could deadlock against a send. Also serializes with sends/batch-exists.
+        DB::transaction(function () use ($voterlist, $voters): void {
+            VoterList::whereKey($voterlist->id)->lockForUpdate()->first();
+            $ownIds = $voterlist->voters()->whereIn('voters.id', $voters)->pluck('voters.id')->all();
+            $voterlist->voters()->detach($ownIds);
+            Voter::destroy($ownIds);
+        });
 
         return new VoterListFull($voterlist);
     }
@@ -348,11 +366,23 @@ class VoterListApiController extends Controller
      * @param \Closure(): mixed $send
      * @param bool $validate false for results, which go to the list as it is (no codes involved)
      */
-    private function lockedSend(VoterList $voterlist, int $codeCount, string $batch, \Closure $send, bool $validate = true): JsonResponse
+    private function lockedSend(VoterList $voterlist, int $codeCount, string $batch, \Closure $send, bool $validate = true, ?int $deadline = null): JsonResponse
     {
-        return DB::transaction(function () use ($voterlist, $codeCount, $batch, $send, $validate): JsonResponse {
+        return DB::transaction(function () use ($voterlist, $codeCount, $batch, $send, $validate, $deadline): JsonResponse {
             VoterList::whereKey($voterlist->id)->lockForUpdate()->first();
             $voterlist->unsetRelation('voters');
+
+            // The caller's absolute give-up time (it may already have asked batch/exists and
+            // rolled back). Checked AFTER taking the lock, so any batch/exists answered after
+            // the deadline is final: a send that gets the lock later refuses here.
+            // Clock skew between the two servers (NTP-synced, well under 1s) is covered by the
+            // caller's margin: its deadline is 10s before its own call timeout.
+            if ($deadline !== null && time() > $deadline) {
+                return $this->basicResponse(409, [
+                    'message' => 'The send arrived after the caller\'s deadline and was not performed.',
+                    'error'   => 'deadline_passed',
+                ]);
+            }
 
             if (SentMessage::where('voterlist_id', $voterlist->id)->where('batch_uuid', $batch)->exists()) {
                 return $this->basicResponse(409, [
@@ -420,6 +450,17 @@ class VoterListApiController extends Controller
         ]);
     }
 
+    /**
+     * Generic 500: never echo the exception (QueryException messages carry the whole SQL
+     * statement, megabytes for a bulk insert). The log gets it truncated.
+     */
+    private function serverError(string $context, \Throwable $e): JsonResponse
+    {
+        Log::alert($context, ['error' => mb_substr($e->getMessage(), 0, 1000), 'exception' => $e::class]);
+
+        return $this->basicResponse(500, ['error' => 'server_error']);
+    }
+
     public function sendInvites(Ballot $service, Request $request, VoterList $voterlist): JsonResponse
     {
         $params = $request->all();
@@ -451,6 +492,12 @@ class VoterListApiController extends Controller
             'locale' =>
             'sometimes|nullable|string',
 
+            // Absolute unix-seconds time after which the caller has given up (and may have rolled
+            // back). Checked under the list lock: a late send is refused, so a later
+            // batch/exists answer is final. Optional (older callers send none).
+            'deadline' =>
+            'sometimes|nullable|integer',
+
         ];
 
         if ($errors = $this->findErrors($params, $settings)) {
@@ -470,11 +517,12 @@ class VoterListApiController extends Controller
                 $voterlist,
                 count($codes),
                 $batch,
-                fn () => $service->sendInvites($voterlist, $codes, $url, $batch, $template, $subject, $locale)
+                fn () => $service->sendInvites($voterlist, $codes, $url, $batch, $template, $subject, $locale),
+                true,
+                isset($params['deadline']) ? (int) $params['deadline'] : null
             );
         } catch (\Exception $e) {
-            Log::alert('Error while sending invites', ['error' => $e->getMessage()]);
-            return $this->basicResponse(500, ['error' => $e->getMessage()]);
+            return $this->serverError('Error while sending invites', $e);
         }
 
         return $response;
@@ -525,8 +573,7 @@ class VoterListApiController extends Controller
                 fn () => $service->sendSessionInvites($voterlist, $codes, $batch, $template, $subject, $locale)
             );
         } catch (\Exception $e) {
-            Log::alert('Error while sending session invites', ['error' => $e->getMessage()]);
-            return $this->basicResponse(500, ['error' => $e->getMessage()]);
+            return $this->serverError('Error while sending session invites', $e);
         }
 
         return $response;
@@ -593,8 +640,7 @@ class VoterListApiController extends Controller
                 false
             );
         } catch (\Exception $e) {
-            Log::alert('Error while sending results', ['error' => $e->getMessage()]);
-            return $this->basicResponse(500, ['error' => $e->getMessage()]);
+            return $this->serverError('Error while sending results', $e);
         }
 
         return $response;
@@ -642,8 +688,7 @@ class VoterListApiController extends Controller
         try {
             $status = $service->sendInvitesTest($to, $url, $template, $subject, $locale);
         } catch (\Exception $e) {
-            Log::alert('Error while sending test invites', ['error' => $e->getMessage()]);
-            return $this->basicResponse(500, ['error' => $e->getMessage()]);
+            return $this->serverError('Error while sending test invites', $e);
         }
 
         return $this->basicResponse(200);
