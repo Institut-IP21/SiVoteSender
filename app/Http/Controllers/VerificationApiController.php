@@ -11,6 +11,7 @@ use App\Services\Verification as ServicesVerification;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -151,13 +152,24 @@ class VerificationApiController extends Controller
 
     public function start(ServicesVerification $service, Verification $verification): JsonResponse
     {
+        // Sending twice would email every voter a second time. The row is locked so a
+        // concurrent request waits, then sees sent_at and is refused; a failure part-way
+        // rolls back the queued messages together with sent_at.
         try {
-            $status = $service->sendInvites($verification);
+            return DB::transaction(function () use ($service, $verification): JsonResponse {
+                $fresh = Verification::whereKey($verification->id)->lockForUpdate()->firstOrFail();
+
+                if ($fresh->sent_at !== null) {
+                    return $this->basicResponse(409, ['error' => 'Verification has already been sent.']);
+                }
+
+                $service->sendInvites($fresh);
+
+                return $this->basicResponse(200);
+            });
         } catch (\Exception $e) {
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
         }
-
-        return $this->basicResponse(200);
     }
 
     public function startSingle(Request $request, ServicesVerification $service, Voter $voter): JsonResponse
@@ -202,19 +214,10 @@ class VerificationApiController extends Controller
 
     public function startTest(Request $request, ServicesVerification $service, Verification $verification): JsonResponse
     {
-        $params = $request->all();
-        $settings = [
-            'to' =>
-            'required|json',
-            'to.*' =>
-            'email',
-        ];
-
-        if ($errors = $this->findErrors($params, $settings)) {
-            return $errors;
+        $to = $this->parseRecipients($request->input('to'));
+        if ($to instanceof JsonResponse) {
+            return $to;
         }
-
-        $to = json_decode((string) $params['to']);
 
         try {
             $status = $service->sendTestInvites($verification, $to);

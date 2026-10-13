@@ -38,6 +38,34 @@ class Controller extends BaseController
     }
 
     /**
+     * Parse and validate test-send recipients. `to` may be a JSON-encoded array (what
+     * web_app sends) or a plain array; each entry must be a valid email, 1..$max entries.
+     *
+     * @return list<string>|JsonResponse  422 response (Laravel validation shape) on failure
+     */
+    protected function parseRecipients(mixed $raw, int $max = 5): array|JsonResponse
+    {
+        $to = is_string($raw) ? json_decode($raw, true) : $raw;
+
+        $validator = Validator::make(['to' => $to], [
+            'to'   => ['required', 'array', 'min:1', 'max:' . $max],
+            'to.*' => ['required', 'string', 'email:rfc', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => $validator->errors()->first(),
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        /** @var list<string> $emails */
+        $emails = array_values((array) $to);
+
+        return $emails;
+    }
+
+    /**
      * @param array<string, mixed> $extra
      */
     public function basicResponse(int $code = 200, array $extra = []): JsonResponse
