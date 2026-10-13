@@ -181,4 +181,36 @@ class SendInvitesAtomicTest extends TestCase
     {
         $this->assertTrue((new \App\Jobs\SendVoterEmail('a@example.org', new \Illuminate\Mail\Mailable()))->afterCommit);
     }
+
+    public function test_duplicate_voters_block_the_send(): void
+    {
+        Queue::fake();
+        $list = $this->listWith([['email' => 'a@example.org'], ['email' => 'A@example.org']]);
+
+        $this->send($list, 2)
+            ->assertStatus(422)
+            ->assertJsonPath('problems.duplicates', 1);
+
+        $this->assertNothingQueued();
+    }
+
+    public function test_batch_exists_endpoint_is_owner_scoped(): void
+    {
+        Queue::fake();
+        $list = $this->listWith([['email' => 'a@example.org']]);
+        $h = ['Authorization' => $this->token, 'Owner' => $this->owner];
+        $batch = Str::uuid()->toString();
+        $url = '/api/voterlist/' . $list->id . '/batch/' . $batch . '/exists';
+
+        $this->withHeaders($h)->getJson($url)->assertOk()->assertExactJson(['exists' => false, 'count' => 0]);
+
+        $this->withHeaders($h)->postJson('/api/voterlist/' . $list->id . '/send-invites', [
+            'batch' => $batch, 'codes' => ['c1'], 'template' => 'T', 'subject' => 'S', 'url' => 'http://x.test/%%CODE%%',
+        ])->assertOk();
+
+        $this->withHeaders($h)->getJson($url)->assertOk()->assertExactJson(['exists' => true, 'count' => 1]);
+
+        $this->withHeaders(['Authorization' => $this->token, 'Owner' => 'b0000000-0000-4000-8000-000000000000'])
+            ->getJson($url)->assertStatus(403);
+    }
 }

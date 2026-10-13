@@ -33,6 +33,16 @@ class VoterListApiController extends Controller
         return response()->json($voterlist->launchStats());
     }
 
+    /**
+     * Did a message batch get queued for this list? Cheap, owner-scoped (via can:view).
+     */
+    public function batchExists(VoterList $voterlist, string $batch): JsonResponse
+    {
+        $count = SentMessage::where('voterlist_id', $voterlist->id)->where('batch_uuid', $batch)->count();
+
+        return response()->json(['exists' => $count > 0, 'count' => $count]);
+    }
+
     public function showBasic(VoterList $voterlist): VoterListBasic
     {
         return new VoterListBasic($voterlist);
@@ -341,6 +351,9 @@ class VoterListApiController extends Controller
         if ($stats['blocked'] > 0) {
             $errors[] = $stats['blocked'] . ' voter(s) have a blocked email address.';
         }
+        if ($stats['duplicates'] > 0) {
+            $errors[] = $stats['duplicates'] . ' duplicate voter(s) on the list would receive more than one code.';
+        }
         if ($mismatch) {
             $errors[] = 'Number of codes (' . $codeCount . ') does not match number of voters (' . $stats['total'] . ').';
         }
@@ -361,6 +374,7 @@ class VoterListApiController extends Controller
             'problems' => [
                 'without_email'  => $stats['without_email'],
                 'blocked'        => $stats['blocked'],
+                'duplicates'     => $stats['duplicates'],
                 'count_mismatch' => $mismatch,
             ],
         ]);

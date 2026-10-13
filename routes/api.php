@@ -79,6 +79,7 @@ Route::middleware('api')->prefix('voter')->group(function () {
 Route::middleware('api')->prefix('voterlist')->group(function () {
     Route::get('/{voterlist}', [VoterListApiController::class, 'show'])->name('voterlist.show')->middleware('can:view,voterlist');
     Route::get('/{voterlist}/launch-check', [VoterListApiController::class, 'launchCheck'])->name('voterlist.launchCheck')->middleware('can:view,voterlist');
+    Route::get('/{voterlist}/batch/{batch}/exists', [VoterListApiController::class, 'batchExists'])->name('voterlist.batch.exists')->middleware('can:view,voterlist');
     Route::get('/{voterlist}/basic', [VoterListApiController::class, 'showBasic'])->name('voterlist.showBasic')->middleware('can:view,voterlist');
     Route::get('/', [VoterListApiController::class, 'list'])->name('voterlist.list')->middleware('can:viewAny,App\Models\VoterList');
     Route::get('/{voterlist}/voters', [VoterListApiController::class, 'listVoters'])->name('voterlist.voters.list')->middleware('can:view,voterlist');
