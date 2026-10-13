@@ -36,9 +36,44 @@ class VoterListApiController extends Controller
     /**
      * Did a message batch get queued for this list? Cheap, owner-scoped (via can:view).
      */
-    public function batchExists(VoterList $voterlist, string $batch): JsonResponse
+    public function batchExists(Request $request, VoterList $voterlist, string $batch): JsonResponse
     {
-        $count = SentMessage::where('voterlist_id', $voterlist->id)->where('batch_uuid', $batch)->count();
+        // Definitive even while a send is in flight: take the SAME row lock lockedSend()
+        // holds for the whole send, so this waits until that send commits (rows visible,
+        // exists:true) or rolls back (exists:false). A plain count would, under REPEATABLE
+        // READ, not see an uncommitted send and wrongly report "not sent". Works for any
+        // batch of this list (invite, session-invite or results).
+        //
+        // The wait is bounded by innodb_lock_wait_timeout (default 50s). Sends hold the
+        // lock for seconds, so a timeout means something is badly stuck: we answer 503
+        // (send_in_progress) instead of a false negative. Callers' client timeout should be
+        // >= ~55s to see that 503 rather than give up first; PHP's max_execution_time does
+        // not tick while waiting in the database.
+        //
+        // Optional ?wait=N (1-50): cap the lock wait to N seconds for impatient callers (a
+        // monitor page with a short client timeout); on expiry -> 503 send_in_progress.
+        $wait = $request->query('wait');
+        $wait = is_numeric($wait) ? max(1, min(50, (int) $wait)) : null;
+
+        try {
+            $count = DB::transaction(function () use ($voterlist, $batch, $wait): int {
+                if ($wait !== null && in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)) {
+                    // Session-scoped; applies to this request's connection only.
+                    DB::statement('SET SESSION innodb_lock_wait_timeout = ' . $wait);
+                }
+                VoterList::whereKey($voterlist->id)->lockForUpdate()->first();
+
+                return SentMessage::where('voterlist_id', $voterlist->id)->where('batch_uuid', $batch)->count();
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (in_array((int) ($e->errorInfo[1] ?? 0), [1205, 1213], true)) { // lock wait timeout / deadlock
+                return $this->basicResponse(503, [
+                    'message' => 'A send for this voter list is still in progress; try again shortly.',
+                    'error'   => 'send_in_progress',
+                ]);
+            }
+            throw $e;
+        }
 
         return response()->json(['exists' => $count > 0, 'count' => $count]);
     }
@@ -311,10 +346,11 @@ class VoterListApiController extends Controller
      * SentMessage and queued job.
      *
      * @param \Closure(): mixed $send
+     * @param bool $validate false for results, which go to the list as it is (no codes involved)
      */
-    private function lockedSend(VoterList $voterlist, int $codeCount, string $batch, \Closure $send): JsonResponse
+    private function lockedSend(VoterList $voterlist, int $codeCount, string $batch, \Closure $send, bool $validate = true): JsonResponse
     {
-        return DB::transaction(function () use ($voterlist, $codeCount, $batch, $send): JsonResponse {
+        return DB::transaction(function () use ($voterlist, $codeCount, $batch, $send, $validate): JsonResponse {
             VoterList::whereKey($voterlist->id)->lockForUpdate()->first();
             $voterlist->unsetRelation('voters');
 
@@ -325,11 +361,15 @@ class VoterListApiController extends Controller
                 ]);
             }
 
-            if ($problem = $this->sendProblems($voterlist, $codeCount)) {
+            if ($validate && $problem = $this->sendProblems($voterlist, $codeCount)) {
                 return $problem;
             }
 
-            $send();
+            // A send closure may veto (nothing queued yet) by returning a response.
+            $early = $send();
+            if ($early instanceof JsonResponse) {
+                return $early;
+            }
 
             return $this->basicResponse(200);
         });
@@ -515,12 +555,18 @@ class VoterListApiController extends Controller
 
             'locale' =>
             'sometimes|nullable|string',
+
+            // Batch of the invite send these results belong to. When given, recipients are
+            // exactly the voters invited in that batch; when absent, the list's current members.
+            'invite_batch' =>
+            'sometimes|nullable|uuid',
         ];
 
         if ($errors = $this->findErrors($params, $settings)) {
             return $errors;
         }
 
+        $inviteBatch = $params['invite_batch'] ?? null;
         $batch      = $params['batch'];
         $template   = $params['template'];
         $subject    = $params['subject'];
@@ -529,17 +575,29 @@ class VoterListApiController extends Controller
         $locale     = $params['locale'] ?? null;
 
         try {
-            DB::transaction(function () use ($service, $voterlist, $batch, $template, $subject, $csv, $resultLink, $locale): void {
-                VoterList::whereKey($voterlist->id)->lockForUpdate()->first();
-                $voterlist->unsetRelation('voters');
-                $service->sendResults($voterlist, $batch, $template, $subject, $csv, $resultLink, $locale);
-            });
+            $response = $this->lockedSend(
+                $voterlist,
+                0,
+                $batch,
+                function () use ($service, $voterlist, $batch, $template, $subject, $csv, $resultLink, $locale, $inviteBatch): ?JsonResponse {
+                    if ($inviteBatch !== null && !SentMessage::where('voterlist_id', $voterlist->id)->where('batch_uuid', $inviteBatch)->exists()) {
+                        return $this->basicResponse(422, [
+                            'message' => 'No invites were sent for this voter list in that invite batch.',
+                            'error'   => 'unknown_invite_batch',
+                        ]);
+                    }
+                    $service->sendResults($voterlist, $batch, $template, $subject, $csv, $resultLink, $locale, $inviteBatch);
+
+                    return null;
+                },
+                false
+            );
         } catch (\Exception $e) {
             Log::alert('Error while sending results', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
         }
 
-        return $this->basicResponse(200);
+        return $response;
     }
 
     public function startTest(Ballot $service, Request $request): JsonResponse

@@ -124,9 +124,9 @@ class SendInvitesAtomicTest extends TestCase
         Queue::fake();
         $list = $this->listWith([['email' => 'a@example.org'], ['email' => 'b@example.org']]);
 
-        $dispatches = 0;
-        \App\Models\SentMessage::creating(function () use (&$dispatches): void {
-            if (++$dispatches === 2) {
+        // Fail after the (bulk) insert, before commit.
+        \Illuminate\Support\Facades\DB::listen(function ($q): void {
+            if (str_contains($q->sql, 'into "sent_messages"')) {
                 throw new \RuntimeException('boom');
             }
         });

@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Mail\BallotInvite;
 use App\Mail\BallotResult;
 use App\Mail\SessionInvite;
+use App\Models\SentMessage;
+use App\Models\Voter;
 use App\Models\VoterList;
 use Illuminate\Support\Facades\Log;
 
@@ -49,16 +51,18 @@ class Ballot
         shuffle($codes);
         $voters->shuffle();
 
+        /** @var array<int, string> $codeFor voter id => code */
+        $codeFor = [];
         foreach ($voters as $voter) {
-            /** @var string $code */
-            $code = array_pop($codes);
-
-            $email = new BallotInvite($code, $url, $template, $subject, $locale);
-
-            $sentMessage = $this->sender->sendEmail($voter, $email, $voterlist, $batch);
-
-            Log::debug('Sent invite', ['voter' => $voter->id, 'batch' => $batch]);
+            $codeFor[$voter->id] = (string) array_pop($codes);
         }
+
+        $this->sender->sendEmails(
+            $voterlist,
+            $voters,
+            fn (Voter $voter) => new BallotInvite($codeFor[$voter->id], $url, $template, $subject, $locale),
+            $batch
+        );
 
         return true;
     }
@@ -94,16 +98,18 @@ class Ballot
             throw new \Exception("Number of session codes and voters does not match", 2);
         }
 
+        /** @var array<int, array<string, string>> $codeFor voter id => session code */
+        $codeFor = [];
         foreach ($voters as $voter) {
-            /** @var array<string, string> $code */
-            $code = array_shift($codes);
-
-            $email = new SessionInvite($code, $template, $subject, $locale);
-
-            $sentMessage = $this->sender->sendEmail($voter, $email, $voterlist, $batch);
-
-            Log::debug('Sent session invite', ['voter' => $voter->id, 'batch' => $batch]);
+            $codeFor[$voter->id] = (array) array_shift($codes);
         }
+
+        $this->sender->sendEmails(
+            $voterlist,
+            $voters,
+            fn (Voter $voter) => new SessionInvite($codeFor[$voter->id], $template, $subject, $locale),
+            $batch
+        );
 
         return true;
     }
@@ -129,33 +135,49 @@ class Ballot
         return true;
     }
 
-    public function sendResults(VoterList $voterlist, string $batch, string $template, string $subject, string $csv, string $resultLink, ?string $locale = null): bool
+    /**
+     * Mail the results. With $inviteBatch the recipients are exactly the voters who got an
+     * invite in that batch for this list (even if detached from the list since, as long
+     * as the voter row still exists and has an address); without it, the current members.
+     * Removing a voter through the API soft-deletes the row, so those voters are skipped.
+     */
+    public function sendResults(VoterList $voterlist, string $batch, string $template, string $subject, string $csv, string $resultLink, ?string $locale = null, ?string $inviteBatch = null): bool
     {
-        $voters = $voterlist->voters;
+        if ($inviteBatch !== null) {
+            $voters = Voter::query()
+                ->whereIn('id', SentMessage::query()
+                    ->where('voterlist_id', $voterlist->id)
+                    ->where('batch_uuid', $inviteBatch)
+                    ->where('type', SentMessage::TYPE_EMAIL)
+                    ->select('voter_id'))
+                ->whereNotNull('email')
+                ->whereRaw("TRIM(email) <> ''")
+                ->get();
+        } else {
+            $voters = $voterlist->voters;
 
-        Log::info(
-            'Sending result emails',
-            ['count' => count($voters), 'voterlist' => $voterlist->id, 'batch' => $batch, 'csvSize' => strlen($csv)]
-        );
-
-        // Check if the voterlist is valid
-        foreach ($voters as $voter) {
-            if (!$voter->email) {
-                Log::warning(
-                    'Tried to send an invite to a voter with no email',
-                    ['voter' => $voter->id, 'voterlist' => $voterlist->id]
-                );
-                throw new \Exception("Voter " . $voter->id . " has no email!", 1);
+            foreach ($voters as $voter) {
+                if (!$voter->email) {
+                    Log::warning(
+                        'Tried to send results to a voter with no email',
+                        ['voter' => $voter->id, 'voterlist' => $voterlist->id]
+                    );
+                    throw new \Exception("Voter " . $voter->id . " has no email!", 1);
+                }
             }
         }
 
-        foreach ($voters as $voter) {
-            $email = new BallotResult($template, $subject, $csv, $resultLink, $locale);
+        Log::info(
+            'Sending result emails',
+            ['count' => count($voters), 'voterlist' => $voterlist->id, 'batch' => $batch, 'inviteBatch' => $inviteBatch, 'csvSize' => strlen($csv)]
+        );
 
-            $sentMessage = $this->sender->sendEmail($voter, $email, $voterlist, $batch);
-
-            Log::debug('Sent results', ['voter' => $voter->id, 'batch' => $batch, 'csvSize' => strlen($csv)]);
-        }
+        $this->sender->sendEmails(
+            $voterlist,
+            $voters,
+            fn (Voter $voter) => new BallotResult($template, $subject, $csv, $resultLink, $locale),
+            $batch
+        );
 
         return true;
     }
