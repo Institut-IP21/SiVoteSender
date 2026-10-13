@@ -113,6 +113,27 @@ class Voter extends Model
 
     //
 
+    /** Canonical form of an email for duplicate detection (trimmed, lower-cased); null when empty. */
+    public static function normalizeEmail(?string $email): ?string
+    {
+        $email = mb_strtolower(trim((string) $email));
+
+        return $email === '' ? null : $email;
+    }
+
+    /** Canonical form of a phone for duplicate detection (digits, optional leading +); null when no digits. */
+    public static function normalizePhone(?string $phone): ?string
+    {
+        $phone = trim((string) $phone);
+        $digits = (string) preg_replace('/\D/', '', $phone);
+
+        if ($digits === '') {
+            return null;
+        }
+
+        return (str_starts_with($phone, '+') ? '+' : '') . $digits;
+    }
+
     /**
      * @param Builder<Voter> $query
      * @return Builder<Voter>

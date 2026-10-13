@@ -12,6 +12,7 @@ use App\Models\Voter;
 use App\Services\Ballot;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -158,7 +159,7 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
-    public function addVoters(Request $request, VoterList $voterlist): JsonResponse|VoterListFull
+    public function addVoters(Request $request, VoterList $voterlist): JsonResponse
     {
         $params = $request->all();
 
@@ -185,20 +186,72 @@ class VoterListApiController extends Controller
 
         /** @var array<int, array<string, mixed>> $voters */
         $voters = $validator->validated()['voters'];
-        foreach ($voters as $voterData) {
-            $voter = Voter::create(
-                [
-                    'title' => $voterData['title'],
-                    'email' => $voterData['email'] ?? null,
-                    'phone' => $voterData['phone'] ?? null,
-                ]
-            );
-            $voterlist->voters()->attach($voter);
-        }
+
+        // A voter who appears twice on a list gets two voting codes and can vote twice,
+        // so duplicates (by email, or by phone for email-less rows) are skipped. The
+        // list row is locked so two concurrent uploads cannot both insert the same
+        // address, and the whole batch is atomic.
+        [$added, $skipped] = DB::transaction(function () use ($voterlist, $voters): array {
+            VoterList::whereKey($voterlist->id)->lockForUpdate()->first();
+
+            $seenEmails = [];
+            $seenPhones = [];
+            foreach ($voterlist->voters()->get(['voters.email', 'voters.phone']) as $existing) {
+                $email = Voter::normalizeEmail($existing->email);
+                if ($email !== null) {
+                    $seenEmails[$email] = true;
+                } elseif (($phone = Voter::normalizePhone($existing->phone)) !== null) {
+                    $seenPhones[$phone] = true;
+                }
+            }
+
+            $added = 0;
+            $skipped = 0;
+            foreach ($voters as $voterData) {
+                $email = Voter::normalizeEmail($voterData['email'] ?? null);
+                $phone = Voter::normalizePhone($voterData['phone'] ?? null);
+
+                if ($email !== null) {
+                    if (isset($seenEmails[$email])) {
+                        $skipped++;
+                        continue;
+                    }
+                    $seenEmails[$email] = true;
+                } elseif ($phone !== null) {
+                    if (isset($seenPhones[$phone])) {
+                        $skipped++;
+                        continue;
+                    }
+                    $seenPhones[$phone] = true;
+                }
+
+                $voter = Voter::create(
+                    [
+                        'title' => $voterData['title'],
+                        'email' => $voterData['email'] ?? null,
+                        'phone' => $voterData['phone'] ?? null,
+                    ]
+                );
+                $voterlist->voters()->attach($voter);
+                $added++;
+            }
+
+            return [$added, $skipped];
+        });
 
         $voterlist->save();
+        $voterlist->unsetRelation('voters');
 
-        return new VoterListFull($voterlist);
+        // `added` / `skipped_duplicates` are repeated inside `data` because web_app's
+        // API wrapper unwraps the `data` envelope.
+        $counts = ['added' => $added, 'skipped_duplicates' => $skipped];
+
+        return response()->json(
+            array_merge(
+                ['data' => array_merge((new VoterListFull($voterlist))->resolve(), $counts)],
+                $counts
+            )
+        );
     }
 
     public function removeVoters(Request $request, VoterList $voterlist): JsonResponse|VoterListFull
