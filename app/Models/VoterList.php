@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Dyrynda\Database\Support\CascadeSoftDeletes;
 
 /**
@@ -79,6 +80,56 @@ class VoterList extends Model
         $result = GlobalEmailBlockList::whereIn('email', $emails)->get();
 
         return $result->isNotEmpty();
+    }
+
+    /**
+     * Cheap pre-launch aggregates for this list (no voter models are loaded).
+     *
+     * - without_email: voters with a null/blank email
+     * - blocked:       voters flagged email_blocked, or whose address is on the global block list
+     * - duplicates:    surplus rows sharing a (case-insensitive) email, plus surplus
+     *                  email-less rows sharing a normalised phone
+     *
+     * @return array{total: int, without_email: int, blocked: int, duplicates: int}
+     */
+    public function launchStats(): array
+    {
+        $row = DB::table('voters')
+            ->join('voterlist_voter', 'voterlist_voter.voter_id', '=', 'voters.id')
+            ->where('voterlist_voter.voterlist_id', $this->id)
+            ->whereNull('voters.deleted_at')
+            ->selectRaw('COUNT(*) AS total')
+            ->selectRaw("SUM(CASE WHEN voters.email IS NULL OR TRIM(voters.email) = '' THEN 1 ELSE 0 END) AS without_email")
+            ->selectRaw(
+                'SUM(CASE WHEN voters.email_blocked = 1 OR EXISTS ('
+                . 'SELECT 1 FROM global_email_block_lists g WHERE LOWER(g.email) = LOWER(TRIM(voters.email))'
+                . ') THEN 1 ELSE 0 END) AS blocked'
+            )
+            ->selectRaw("COUNT(CASE WHEN voters.email IS NOT NULL AND TRIM(voters.email) <> '' THEN 1 END) AS with_email")
+            ->selectRaw("COUNT(DISTINCT CASE WHEN voters.email IS NOT NULL AND TRIM(voters.email) <> '' THEN LOWER(TRIM(voters.email)) END) AS distinct_emails")
+            ->first();
+
+        $emailDuplicates = (int) ($row->with_email ?? 0) - (int) ($row->distinct_emails ?? 0);
+
+        // Email-less voters are only identifiable by phone; these are rare, so normalise in PHP.
+        $phones = DB::table('voters')
+            ->join('voterlist_voter', 'voterlist_voter.voter_id', '=', 'voters.id')
+            ->where('voterlist_voter.voterlist_id', $this->id)
+            ->whereNull('voters.deleted_at')
+            ->where(fn ($q) => $q->whereNull('voters.email')->orWhereRaw("TRIM(voters.email) = ''"))
+            ->whereNotNull('voters.phone')
+            ->pluck('voters.phone')
+            ->map(fn ($phone) => Voter::normalizePhone((string) $phone))
+            ->filter()
+            ->all();
+        $phoneDuplicates = count($phones) - count(array_unique($phones));
+
+        return [
+            'total'         => (int) ($row->total ?? 0),
+            'without_email' => (int) ($row->without_email ?? 0),
+            'blocked'       => (int) ($row->blocked ?? 0),
+            'duplicates'    => $emailDuplicates + $phoneDuplicates,
+        ];
     }
 
     /** @return BelongsToMany<Voter, $this> */

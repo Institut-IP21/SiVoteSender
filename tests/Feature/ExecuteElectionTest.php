@@ -161,7 +161,7 @@ class ExecuteElectionTest extends TestCase
                 ]
             );
 
-        $response->assertStatus(409);
+        $response->assertStatus(422);
         Mail::assertSent(BallotInvite::class, 0);
     }
 }

@@ -24,6 +24,14 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
+    /**
+     * Pre-launch aggregate check used before opening a ballot on this list.
+     */
+    public function launchCheck(VoterList $voterlist): JsonResponse
+    {
+        return response()->json($voterlist->launchStats());
+    }
+
     public function showBasic(VoterList $voterlist): VoterListBasic
     {
         return new VoterListBasic($voterlist);
@@ -285,6 +293,47 @@ class VoterListApiController extends Controller
         return new VoterListFull($voterlist);
     }
 
+    /**
+     * Validate a list is sendable BEFORE anything is queued: every voter has an email,
+     * none is blocked, and the code count equals the voter count.
+     */
+    private function sendProblems(VoterList $voterlist, int $codeCount): ?JsonResponse
+    {
+        $stats = $voterlist->launchStats();
+        $mismatch = $codeCount !== $stats['total'];
+
+        $errors = [];
+        if ($stats['without_email'] > 0) {
+            $errors[] = $stats['without_email'] . ' voter(s) have no email address.';
+        }
+        if ($stats['blocked'] > 0) {
+            $errors[] = $stats['blocked'] . ' voter(s) have a blocked email address.';
+        }
+        if ($mismatch) {
+            $errors[] = 'Number of codes (' . $codeCount . ') does not match number of voters (' . $stats['total'] . ').';
+        }
+
+        if ($errors === []) {
+            return null;
+        }
+
+        Log::warning('Refused to send: voter list is not sendable', [
+            'voterlist' => $voterlist->id,
+            'problems'  => $stats,
+            'codes'     => $codeCount,
+        ]);
+
+        return $this->basicResponse(422, [
+            'message'  => 'The voter list cannot be sent: ' . implode(' ', $errors),
+            'errors'   => ['voters' => $errors],
+            'problems' => [
+                'without_email'  => $stats['without_email'],
+                'blocked'        => $stats['blocked'],
+                'count_mismatch' => $mismatch,
+            ],
+        ]);
+    }
+
     public function sendInvites(Ballot $service, Request $request, VoterList $voterlist): JsonResponse
     {
         $params = $request->all();
@@ -322,10 +371,8 @@ class VoterListApiController extends Controller
             return $errors;
         }
 
-        if ($voterlist->checkVoterListHasBlockedVoters()) {
-            return $this->basicResponse(409, [
-                'error' => 'VoterList contains blocked voters.'
-            ]);
+        if ($problem = $this->sendProblems($voterlist, count($params['codes']))) {
+            return $problem;
         }
 
         $codes    = $params['codes'];
@@ -336,7 +383,10 @@ class VoterListApiController extends Controller
         $locale   = $params['locale'] ?? null;
 
         try {
-            $status = $service->sendInvites($voterlist, $codes, $url, $batch, $template, $subject, $locale);
+            // One transaction: a failure part-way leaves no SentMessage / queued job behind.
+            $status = DB::transaction(
+                fn () => $service->sendInvites($voterlist, $codes, $url, $batch, $template, $subject, $locale)
+            );
         } catch (\Exception $e) {
             Log::alert('Error while sending invites', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
@@ -375,10 +425,8 @@ class VoterListApiController extends Controller
             return $errors;
         }
 
-        if ($voterlist->checkVoterListHasBlockedVoters()) {
-            return $this->basicResponse(409, [
-                'error' => 'VoterList contains blocked voters.'
-            ]);
+        if ($problem = $this->sendProblems($voterlist, count($params['codes']))) {
+            return $problem;
         }
 
         $codes    = $params['codes'];
@@ -388,7 +436,9 @@ class VoterListApiController extends Controller
         $locale   = $params['locale'] ?? null;
 
         try {
-            $status = $service->sendSessionInvites($voterlist, $codes, $batch, $template, $subject, $locale);
+            $status = DB::transaction(
+                fn () => $service->sendSessionInvites($voterlist, $codes, $batch, $template, $subject, $locale)
+            );
         } catch (\Exception $e) {
             Log::alert('Error while sending session invites', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
