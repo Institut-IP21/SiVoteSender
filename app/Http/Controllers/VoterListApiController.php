@@ -7,6 +7,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use App\Http\Resources\VoterListBasic;
 use App\Http\Resources\VoterListFull;
 use App\Http\Resources\VoterBasic;
+use App\Models\SentMessage;
 use App\Models\VoterList;
 use App\Models\Voter;
 use App\Services\Ballot;
@@ -294,6 +295,37 @@ class VoterListApiController extends Controller
     }
 
     /**
+     * Run a send under a lock on the list row, in one transaction: the voter set cannot
+     * change between validation and per-voter code assignment, a repeat of the same
+     * list + batch is refused (409 already_sent), and a failure part-way rolls back every
+     * SentMessage and queued job.
+     *
+     * @param \Closure(): mixed $send
+     */
+    private function lockedSend(VoterList $voterlist, int $codeCount, string $batch, \Closure $send): JsonResponse
+    {
+        return DB::transaction(function () use ($voterlist, $codeCount, $batch, $send): JsonResponse {
+            VoterList::whereKey($voterlist->id)->lockForUpdate()->first();
+            $voterlist->unsetRelation('voters');
+
+            if (SentMessage::where('voterlist_id', $voterlist->id)->where('batch_uuid', $batch)->exists()) {
+                return $this->basicResponse(409, [
+                    'message' => 'This batch has already been sent for this voter list.',
+                    'error'   => 'already_sent',
+                ]);
+            }
+
+            if ($problem = $this->sendProblems($voterlist, $codeCount)) {
+                return $problem;
+            }
+
+            $send();
+
+            return $this->basicResponse(200);
+        });
+    }
+
+    /**
      * Validate a list is sendable BEFORE anything is queued: every voter has an email,
      * none is blocked, and the code count equals the voter count.
      */
@@ -371,9 +403,6 @@ class VoterListApiController extends Controller
             return $errors;
         }
 
-        if ($problem = $this->sendProblems($voterlist, count($params['codes']))) {
-            return $problem;
-        }
 
         $codes    = $params['codes'];
         $url      = $params['url'];
@@ -383,8 +412,10 @@ class VoterListApiController extends Controller
         $locale   = $params['locale'] ?? null;
 
         try {
-            // One transaction: a failure part-way leaves no SentMessage / queued job behind.
-            $status = DB::transaction(
+            $response = $this->lockedSend(
+                $voterlist,
+                count($codes),
+                $batch,
                 fn () => $service->sendInvites($voterlist, $codes, $url, $batch, $template, $subject, $locale)
             );
         } catch (\Exception $e) {
@@ -392,7 +423,7 @@ class VoterListApiController extends Controller
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
         }
 
-        return $this->basicResponse(200);
+        return $response;
     }
 
     public function sendSessionInvites(Ballot $service, Request $request, VoterList $voterlist): JsonResponse
@@ -425,9 +456,6 @@ class VoterListApiController extends Controller
             return $errors;
         }
 
-        if ($problem = $this->sendProblems($voterlist, count($params['codes']))) {
-            return $problem;
-        }
 
         $codes    = $params['codes'];
         $batch    = $params['batch'];
@@ -436,7 +464,10 @@ class VoterListApiController extends Controller
         $locale   = $params['locale'] ?? null;
 
         try {
-            $status = DB::transaction(
+            $response = $this->lockedSend(
+                $voterlist,
+                count($codes),
+                $batch,
                 fn () => $service->sendSessionInvites($voterlist, $codes, $batch, $template, $subject, $locale)
             );
         } catch (\Exception $e) {
@@ -444,7 +475,7 @@ class VoterListApiController extends Controller
             return $this->basicResponse(500, ['error' => $e->getMessage()]);
         }
 
-        return $this->basicResponse(200);
+        return $response;
     }
 
     public function sendResults(Ballot $service, Request $request, VoterList $voterlist): JsonResponse
@@ -484,7 +515,11 @@ class VoterListApiController extends Controller
         $locale     = $params['locale'] ?? null;
 
         try {
-            $status = $service->sendResults($voterlist, $batch, $template, $subject, $csv, $resultLink, $locale);
+            DB::transaction(function () use ($service, $voterlist, $batch, $template, $subject, $csv, $resultLink, $locale): void {
+                VoterList::whereKey($voterlist->id)->lockForUpdate()->first();
+                $voterlist->unsetRelation('voters');
+                $service->sendResults($voterlist, $batch, $template, $subject, $csv, $resultLink, $locale);
+            });
         } catch (\Exception $e) {
             Log::alert('Error while sending results', ['error' => $e->getMessage()]);
             return $this->basicResponse(500, ['error' => $e->getMessage()]);

@@ -145,4 +145,40 @@ class SendInvitesAtomicTest extends TestCase
 
         $this->assertSame(2, SentMessage::count());
     }
+
+    public function test_repeating_the_same_batch_is_refused_and_queues_nothing_more(): void
+    {
+        Queue::fake();
+        $list = $this->listWith([['email' => 'a@example.org'], ['email' => 'b@example.org']]);
+        $batch = Str::uuid()->toString();
+        $payload = [
+            'batch' => $batch, 'codes' => ['c1', 'c2'], 'template' => 'T', 'subject' => 'S', 'url' => 'http://x.test/%%CODE%%',
+        ];
+        $h = ['Authorization' => $this->token, 'Owner' => $this->owner];
+
+        $this->withHeaders($h)->postJson('/api/voterlist/' . $list->id . '/send-invites', $payload)->assertOk();
+        $this->assertSame(2, SentMessage::count());
+
+        $this->withHeaders($h)->postJson('/api/voterlist/' . $list->id . '/send-invites', $payload)
+            ->assertStatus(409)
+            ->assertJsonPath('error', 'already_sent');
+
+        $this->assertSame(2, SentMessage::count());
+    }
+
+    public function test_a_different_batch_is_not_blocked(): void
+    {
+        Queue::fake();
+        $list = $this->listWith([['email' => 'a@example.org']]);
+        $h = ['Authorization' => $this->token, 'Owner' => $this->owner];
+        $base = ['codes' => ['c1'], 'template' => 'T', 'subject' => 'S', 'url' => 'http://x.test/%%CODE%%'];
+
+        $this->withHeaders($h)->postJson('/api/voterlist/' . $list->id . '/send-invites', $base + ['batch' => Str::uuid()->toString()])->assertOk();
+        $this->withHeaders($h)->postJson('/api/voterlist/' . $list->id . '/send-invites', $base + ['batch' => Str::uuid()->toString()])->assertOk();
+    }
+
+    public function test_send_job_is_dispatched_after_commit(): void
+    {
+        $this->assertTrue((new \App\Jobs\SendVoterEmail('a@example.org', new \Illuminate\Mail\Mailable()))->afterCommit);
+    }
 }

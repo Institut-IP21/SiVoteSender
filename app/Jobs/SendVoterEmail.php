@@ -32,6 +32,8 @@ class SendVoterEmail implements ShouldQueue, ShouldBeEncrypted
         public Mailable $mailable,
         public ?int $sentMessageId = null,
     ) {
+        // Never run before the surrounding send transaction commits (and not at all if it rolls back).
+        $this->afterCommit = true;
         $this->maxExceptions = (int) config('mail-alerts.max_exceptions', 8);
     }
 
