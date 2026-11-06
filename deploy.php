@@ -87,7 +87,8 @@ task('secure:config-cache', function () {
 // The sender box's deploy user does NOT (yet) have NOPASSWD sudo for this, so
 // the task warns instead of failing the deploy. Grant it via infra to activate.
 task('php-fpm:restart', function () {
-    run('if sudo -n /usr/bin/systemctl restart php-fpm 2>/dev/null; then echo "php-fpm restarted"; else echo "NOTE: php-fpm not restarted — deploy user lacks NOPASSWD sudo on this host"; fi');
+    // Some hosts only grant `reload` (vps2): fall back to it, or the old code stays in OPcache.
+    run('if sudo -n /usr/bin/systemctl restart php-fpm 2>/dev/null; then echo "php-fpm restarted"; elif sudo -n /usr/bin/systemctl reload php-fpm 2>/dev/null; then echo "php-fpm reloaded"; else echo "WARNING: php-fpm neither restarted nor reloaded — the old code may still be served"; fi');
 })->desc('Restart php-fpm after the symlink flip (no-op if sudo not granted)');
 
 after('deploy:symlink', 'php-fpm:restart');
