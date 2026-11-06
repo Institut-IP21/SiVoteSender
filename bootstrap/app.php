@@ -29,7 +29,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'sns.verify' => \App\Http\Middleware\VerifySnsMessage::class,
         ]);
 
+        // Throttle before ApiAuth so token guessing is limited.
         $middleware->api(prepend: [
+            'throttle:api',
             \App\Http\Middleware\ApiAuth::class,
         ]);
 
@@ -65,6 +67,27 @@ return Application::configure(basePath: dirname(__DIR__))
         // Generous on purpose: a 429 on a genuine bounce burst makes SNS back off and leaves block state stale.
         RateLimiter::for('sns', function (Request $request) {
             return Limit::perMinute(300)->by($request->ip());
+        });
+
+        // The API had no limiter, so the token could be guessed at full speed.
+        // Failed logins are counted per client network (IPv4 address, IPv6 /64) at
+        // 120/min; once that bucket is full EVERY request from there gets 429, a
+        // correct token included. Valid traffic (web_app's own batches) isn't capped.
+        RateLimiter::for('api', function (Request $request) {
+            $ip = (string) ($request->ip() ?? 'unknown');
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
+                $ip = substr(bin2hex((string) inet_pton($ip)), 0, 16) . '::/64';
+            }
+            $key = 'api-authfail|' . $ip;
+
+            if (!\App\Http\Middleware\ApiAuth::isKnownToken($request->header('Authorization'))) {
+                // Certain to 401: count it before handling, so concurrent guesses can't slip past.
+                return Limit::perMinute(120)->by($key);
+            }
+
+            // Checked, and counted only on a 401 (a valid token without an Owner).
+            return Limit::perMinute(120)->by($key)
+                ->after(fn ($response): bool => $response->getStatusCode() === 401);
         });
 
         RateLimiter::for('ses', function () {

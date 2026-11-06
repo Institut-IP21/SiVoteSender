@@ -12,20 +12,7 @@ class ApiAuth
     /** @param Request $request */
     public function handle($request, Closure $next)
     {
-        $auth = $request->header('Authorization');
-
-        // hash_equals, not in_array: loose == coerces numeric tokens ("1e3" == "1000").
-        $valid = false;
-        if (is_string($auth) && $auth !== '') {
-            foreach ((array) config('app.api.authlist') as $token) {
-                if (is_string($token) && $token !== '' && hash_equals($token, $auth)) {
-                    $valid = true;
-                    break;
-                }
-            }
-        }
-
-        if (!$valid) {
+        if (!self::isKnownToken($request->header('Authorization'))) {
             return response(['error' => 'No authorization or invalid.'], 401);
         }
 
@@ -41,5 +28,21 @@ class ApiAuth
         Auth::login($user);
 
         return $next($request);
+    }
+
+    /** Whether the Authorization value is a configured API token. */
+    public static function isKnownToken(mixed $auth): bool
+    {
+        // hash_equals, not in_array: loose == coerces numeric tokens ("1e3" == "1000").
+        if (!is_string($auth) || $auth === '') {
+            return false;
+        }
+        foreach ((array) config('app.api.authlist') as $token) {
+            if (is_string($token) && $token !== '' && hash_equals($token, $auth)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
