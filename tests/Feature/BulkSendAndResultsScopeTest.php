@@ -105,6 +105,28 @@ class BulkSendAndResultsScopeTest extends TestCase
         $this->assertSame(60, SentMessage::where('batch_uuid', $batch)->distinct('voter_id')->count('voter_id'));
     }
 
+    public function test_bulk_send_inserts_jobs_inside_the_send_transaction(): void
+    {
+        // Laravel's DatabaseQueue::bulk defers afterCommit jobs until after the commit;
+        // the send must opt out so a crash can't leave messages "sent" with no job.
+        config(['queue.default' => 'database']);
+        $list = $this->listOf(3);
+        $base = DB::transactionLevel();
+        $levels = [];
+        DB::listen(function ($q) use (&$levels): void {
+            if (str_contains($q->sql, 'into "jobs"')) {
+                $levels[] = DB::transactionLevel();
+            }
+        });
+
+        $this->invite($list, Str::uuid()->toString(), 3)->assertOk();
+
+        $this->assertNotEmpty($levels);
+        foreach ($levels as $level) {
+            $this->assertGreaterThan($base, $level, 'jobs were inserted after the send transaction committed');
+        }
+    }
+
     public function test_bulk_send_rolls_back_jobs_and_messages_together(): void
     {
         config(['queue.default' => 'database']);
