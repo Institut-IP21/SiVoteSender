@@ -169,6 +169,13 @@ class Sender
             // by bytes as well as rows. A single job always goes alone if it alone is bigger.
             $perChunk = max(1, min(self::BULK_CHUNK, intdiv(self::BULK_MAX_BYTES, $this->estimateStoredSize($jobs[0]))));
             foreach (array_chunk($jobs, $perChunk) as $chunk) {
+                // Laravel's DatabaseQueue::bulk defers afterCommit jobs until after the
+                // commit. Here that would let a crash between commit and insert record
+                // messages as sent with no mail queued, so insert them NOW, inside the
+                // transaction, which already discards them on rollback.
+                foreach ($chunk as $job) {
+                    $job->afterCommit = false;
+                }
                 Queue::connection()->bulk($chunk);
             }
 
